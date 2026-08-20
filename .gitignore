@@ -1,0 +1,4 @@
+*.o
+newkind
+newkind.exe
+*.log

@@ -19,7 +19,7 @@
 #
 
 CC = gcc
-LIBS = `allegro-config --libs`
+LIBS = `allegro-config --libs` -lm
 CFLAGS = -O -Wall
 OBJS = alg_gfx.o alg_main.o docked.o elite.o \
 intro.o planet.o shipdata.o shipface.o sound.o space.o \
@@ -30,7 +30,7 @@ EXEC = newkind
 all: $(EXEC)
 
 clean:
-	rm *.o $(EXEC)
+	rm -f *.o $(EXEC)
 
 .SUFFIXES : .c .o
 
