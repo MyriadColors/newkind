@@ -31,8 +31,12 @@
 #include "shipdata.h"
 #include "shipface.h"
 #include "threed.h"
-#include "space.h"
 #include "stars.h"
+#include "game_state.h"
+
+#define universe (get_universe_state()->objects)
+#define ship_count (get_universe_state()->ship_count)
+#define flight_roll (get_flight_state()->roll)
 
 static int ship_no;
 static int show_time;

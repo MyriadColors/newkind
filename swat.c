@@ -34,6 +34,29 @@
 #include "random.h"
 #include "trade.h"
 #include "pilot.h" 
+#include "game_state.h"
+
+#define universe (get_universe_state()->objects)
+#define ship_count (get_universe_state()->ship_count)
+#define cmdr (get_player_state()->current)
+#define myship (get_player_state()->vitals.ship_specs)
+#define myship_energy (get_player_state()->vitals.energy)
+#define front_shield (get_player_state()->vitals.front_shield)
+#define aft_shield (get_player_state()->vitals.aft_shield)
+#define laser_temp (get_player_state()->vitals.laser_temp)
+#define detonate_bomb (get_player_state()->vitals.detonate_bomb)
+#define auto_pilot (get_player_state()->vitals.auto_pilot)
+#define witchspace (get_player_state()->vitals.witchspace)
+#define mcount (get_player_state()->vitals.mcount)
+#define flight_speed (get_flight_state()->speed)
+#define flight_roll (get_flight_state()->roll)
+#define flight_climb (get_flight_state()->climb)
+#define flight_yaw (get_flight_state()->yaw)
+#define current_screen (get_session_state()->current_screen)
+#define docked (get_session_state()->is_docked)
+#define docked_planet (get_universe_state()->docked_planet)
+#define current_planet_data (get_universe_state()->current_planet_data)
+#define wireframe (get_config_state()->wireframe)
 
 int laser_counter;
 int laser;
@@ -45,9 +68,6 @@ int ecm_active;
 int missile_target;
 int ecm_ours;
 int in_battle;
-
-struct univ_object universe[MAX_UNIV_OBJECTS];
-int ship_count[NO_OF_SHIPS + 1];  /* many */
 
 
 int initial_flags[NO_OF_SHIPS + 1] =
@@ -934,8 +954,8 @@ int fire_laser (void)
 
 			snd_play_sample (SND_PULSE);
 			laser_temp += 8;
-			if (energy > 1)
-				energy--;
+			if (myship_energy > 1)
+				myship_energy--;
 			
 			laser_x = ((rand() & 3) + 128 - 2) * GFX_SCALE;
 			laser_y = ((rand() & 3) + 96 - 2) * GFX_SCALE;

@@ -27,6 +27,12 @@
 #include "threed.h"
 #include "space.h"
 #include "random.h"
+#include "game_state.h"
+
+#define planet_render_style (get_config_state()->planet_render_style)
+#define wireframe (get_config_state()->wireframe)
+#define current_screen (get_session_state()->current_screen)
+#define universe (get_universe_state()->objects)
 
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 

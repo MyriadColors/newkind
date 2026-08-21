@@ -40,7 +40,7 @@ endif
 
 EXEC = newkind$(EXEC_EXT)
 
-OBJS = gfx.o main.o docked.o elite.o \
+OBJS = game_state.o gfx.o main.o docked.o elite.o \
        intro.o planet.o shipdata.o shipface.o sound.o space.o \
        swat.o threed.o vector.o random.o trade.o options.o \
        stars.o missions.o pilot.o file.o keyboard.o
@@ -102,4 +102,5 @@ missions.o: missions.c missions.h config.h elite.h gfx.h planet.h main.h \
 	vector.h space.h
 pilot.o: pilot.c pilot.h config.h elite.h gfx.h vector.h space.h main.h
 file.o: file.c file.h config.h elite.h
-keyboard.o: keyboard.c keyboard.h
+keyboard.o: keyboard.c keyboard.h elite.h gfx.h
+game_state.o: game_state.c game_state.h planet.h trade.h vector.h shipdata.h

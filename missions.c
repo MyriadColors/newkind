@@ -106,21 +106,24 @@ const char *mission2_debrief =
 const char *mission_planet_desc (struct galaxy_seed planet)
 {
 	int pnum;
+	const SessionState *session = get_session_state();
+	const UniverseState *env = get_universe_state();
+	const PlayerState *player = get_player_state();
 
-	if (!docked)
+	if (!session->is_docked)
 		return nullptr;
 
-	if ((planet.a != docked_planet.a) ||
-	    (planet.b != docked_planet.b) ||
-	    (planet.c != docked_planet.c) ||
-	    (planet.d != docked_planet.d) ||
-	    (planet.e != docked_planet.e) ||
-	    (planet.f != docked_planet.f))
+	if ((planet.a != env->docked_planet.a) ||
+	    (planet.b != env->docked_planet.b) ||
+	    (planet.c != env->docked_planet.c) ||
+	    (planet.d != env->docked_planet.d) ||
+	    (planet.e != env->docked_planet.e) ||
+	    (planet.f != env->docked_planet.f))
 		return nullptr;
 	
 	pnum = find_planet_number (planet);
 	
-	if (cmdr.galaxy_number == 0)
+	if (player->current.galaxy_number == 0)
 	{
 		switch (pnum)
 		{
@@ -135,7 +138,7 @@ const char *mission_planet_desc (struct galaxy_seed planet)
 		}
 	}
 
-	if (cmdr.galaxy_number == 1)
+	if (player->current.galaxy_number == 1)
 	{
 		switch (pnum)
 		{
@@ -171,7 +174,7 @@ const char *mission_planet_desc (struct galaxy_seed planet)
 		}
 	}
 
-	if ((cmdr.galaxy_number == 2) && (pnum == 101))
+	if ((player->current.galaxy_number == 2) && (pnum == 101))
 		return mission1_pdesc[9];							
 	
 	return nullptr;
@@ -181,10 +184,14 @@ const char *mission_planet_desc (struct galaxy_seed planet)
 void constrictor_mission_brief (void)
 {
 	EliteMatrix rotmat;
+	PlayerState *player = get_player_state();
+	SessionState *session = get_session_state();
+	FlightState *flight = get_flight_state();
+	UniverseState *env = get_universe_state();
 
-	cmdr.mission = 1;
+	player->current.mission = 1;
 
-	current_screen = SCR_FRONT_VIEW;
+	session->current_screen = SCR_FRONT_VIEW;
 
 	gfx_clear_display();
 	gfx_display_centre_text (10, "INCOMING MESSAGE", 140, GFX_COL_GOLD);
@@ -192,22 +199,22 @@ void constrictor_mission_brief (void)
 
 	gfx_display_pretty_text (16, 50, 300, 384, mission1_brief_a);
 	gfx_display_pretty_text (16, 200, 470, 384,
-	      (cmdr.galaxy_number == 0) ? mission1_brief_b : mission1_brief_c);
+	      (player->current.galaxy_number == 0) ? mission1_brief_b : mission1_brief_c);
 		
 	gfx_display_centre_text (330, "Press space to continue.", 140, GFX_COL_GOLD);
 		
 	clear_universe();
 	set_init_matrix (rotmat);
 	add_new_ship (SHIP_CONSTRICTOR, 200, 90, 600, rotmat, -127, -127);
-	flight_roll = 0;
-	flight_climb = 0;
-	flight_speed = 0;
+	flight->roll = 0;
+	flight->climb = 0;
+	flight->speed = 0;
 
 	do
 	{
 		gfx_clear_area (310, 50, 510, 180);
 		update_universe ();
-		universe[0].location.z = 600;
+		env->objects[0].location.z = 600;
 		gfx_update_screen();
 		kbd_poll_keyboard();
 	} while (!kbd_space_pressed);
@@ -217,10 +224,11 @@ void constrictor_mission_brief (void)
 void constrictor_mission_debrief (void)
 {
 	int keyasc;
+	PlayerState *player = get_player_state();
 
-	cmdr.mission = 3;
-	cmdr.score += 256;
-	cmdr.credits += 50000;
+	player->current.mission = 3;
+	player->current.score += 256;
+	player->current.credits += 50000;
 	
 	gfx_clear_display();
 	gfx_display_centre_text (10, "INCOMING MESSAGE", 140, GFX_COL_GOLD);
@@ -244,8 +252,9 @@ void constrictor_mission_debrief (void)
 void thargoid_mission_first_brief (void)
 {
 	int keyasc;
+	PlayerState *player = get_player_state();
 
-	cmdr.mission = 4;
+	player->current.mission = 4;
 	
 	gfx_clear_display();
 	gfx_display_centre_text (10, "INCOMING MESSAGE", 140, GFX_COL_GOLD);
@@ -267,8 +276,9 @@ void thargoid_mission_first_brief (void)
 void thargoid_mission_second_brief (void)
 {
 	int keyasc;
+	PlayerState *player = get_player_state();
 
-	cmdr.mission = 5;
+	player->current.mission = 5;
 	
 	gfx_clear_display();
 	gfx_display_centre_text (10, "INCOMING MESSAGE", 140, GFX_COL_GOLD);
@@ -293,10 +303,11 @@ void thargoid_mission_second_brief (void)
 void thargoid_mission_debrief (void)
 {
 	int keyasc;
+	PlayerState *player = get_player_state();
 
-	cmdr.mission = 6;
-	cmdr.score += 256;
-	cmdr.energy_unit = 2;
+	player->current.mission = 6;
+	player->current.score += 256;
+	player->current.energy_unit = 2;
 	
 	gfx_clear_display ();
 	gfx_display_centre_text (10, "INCOMING MESSAGE", 140, GFX_COL_GOLD);
@@ -320,31 +331,34 @@ void thargoid_mission_debrief (void)
 
 void check_mission_brief (void)
 {
-	if ((cmdr.mission == 0) && (cmdr.score >= 256) && (cmdr.galaxy_number < 2))
+	const PlayerState *player = get_player_state();
+	const UniverseState *env = get_universe_state();
+
+	if ((player->current.mission == 0) && (player->current.score >= 256) && (player->current.galaxy_number < 2))
 	{
 		constrictor_mission_brief();
 		return;
 	}
 
-	if (cmdr.mission == 2)
+	if (player->current.mission == 2)
 	{
 		constrictor_mission_debrief();
 		return;
 	}
 
-	if ((cmdr.mission == 3) && (cmdr.score >= 1280) && (cmdr.galaxy_number == 2))
+	if ((player->current.mission == 3) && (player->current.score >= 1280) && (player->current.galaxy_number == 2))
 	{
 		thargoid_mission_first_brief();
 		return;
 	}
 
-	if ((cmdr.mission == 4) && (docked_planet.d == 215) && (docked_planet.b == 84))
+	if ((player->current.mission == 4) && (env->docked_planet.d == 215) && (env->docked_planet.b == 84))
 	{
 		thargoid_mission_second_brief();
 		return;
 	}
 
-	if ((cmdr.mission == 5) && (docked_planet.d == 63) && (docked_planet.b == 72))
+	if ((player->current.mission == 5) && (env->docked_planet.d == 63) && (env->docked_planet.b == 72))
 	{
 		thargoid_mission_debrief();
 		return;

@@ -79,17 +79,19 @@ void generate_stock_market (void)
 	int quant;
 	int price;
 	int i;
+	const PlayerState *player = get_player_state();
+	const UniverseState *env = get_universe_state();
 
 	for (i = 0; i < NO_OF_STOCK_ITEMS; i++)
 	{
 		price  = stock_market[i].base_price;								/* Start with the base price	*/
-		price += cmdr.market_rnd & stock_market[i].mask;					/* Add in a random amount		*/
-		price += current_planet_data.economy * stock_market[i].eco_adjust;	/* Adjust for planet economy	*/
+		price += player->current.market_rnd & stock_market[i].mask;					/* Add in a random amount		*/
+		price += env->current_planet_data.economy * stock_market[i].eco_adjust;	/* Adjust for planet economy	*/
 		price &= 255;														/* Only need bottom 8 bits		*/
 
 		quant  = stock_market[i].base_quantity;								/* Start with the base quantity */
-		quant += cmdr.market_rnd & stock_market[i].mask;					/* Add in a random amount		*/
-		quant -= current_planet_data.economy * stock_market[i].eco_adjust;	/* Adjust for planet economy	*/
+		quant += player->current.market_rnd & stock_market[i].mask;					/* Add in a random amount		*/
+		quant -= env->current_planet_data.economy * stock_market[i].eco_adjust;	/* Adjust for planet economy	*/
 		quant &= 255;														/* Only need bottom 8 bits		*/
 
 		if (quant > 127)	/* In an 8-bit environment '>127' would be negative */
@@ -122,8 +124,9 @@ void set_stock_quantities(int *quant)
  
 int carrying_contraband (void)
 {
-	return (cmdr.current_cargo[SLAVES] + cmdr.current_cargo[NARCOTICS]) * 2 +
-			cmdr.current_cargo[FIREARMS];
+	const PlayerState *player = get_player_state();
+	return (player->current.current_cargo[SLAVES] + player->current.current_cargo[NARCOTICS]) * 2 +
+			player->current.current_cargo[FIREARMS];
 }
 
 
@@ -131,14 +134,15 @@ int total_cargo (void)
 {
 	int i;
 	int cargo_held;
+	const PlayerState *player = get_player_state();
 
 	cargo_held = 0;
 	for (i = 0; i < 17; i++)
 	{
-		if ((cmdr.current_cargo[i] > 0) &&
+		if ((player->current.current_cargo[i] > 0) &&
 			(stock_market[i].units == TONNES))
 		{
-			cargo_held += cmdr.current_cargo[i];
+			cargo_held += player->current.current_cargo[i];
 		}
 	}
 
@@ -150,27 +154,29 @@ void scoop_item (int un)
 {
 	int type;
 	int trade;
+	PlayerState *player = get_player_state();
+	UniverseState *env = get_universe_state();
 
-	if (universe[un].flags & FLG_DEAD)
+	if (env->objects[un].flags & FLG_DEAD)
 		return;
 	
-	type = universe[un].type;
+	type = env->objects[un].type;
 	
 	if (type == SHIP_MISSILE)
 		return;
 
-	if ((cmdr.fuel_scoop == 0) || (universe[un].location.y >= 0) ||
-		(total_cargo() == cmdr.cargo_capacity))
+	if ((player->current.fuel_scoop == 0) || (env->objects[un].location.y >= 0) ||
+		(total_cargo() == player->current.cargo_capacity))
 	{
 		explode_object (un);
-		damage_ship (128 + (universe[un].energy / 2), universe[un].location.z > 0);
+		damage_ship (128 + (env->objects[un].energy / 2), env->objects[un].location.z > 0);
 		return;
 	}
 
 	if (type == SHIP_CARGO)
 	{
 		trade = rand255() & 7;
-		cmdr.current_cargo[trade]++;
+		player->current.current_cargo[trade]++;
 		info_message (stock_market[trade].name);
 		remove_ship (un);
 		return;					
@@ -179,13 +185,13 @@ void scoop_item (int un)
 	if (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != nullptr && ship_list[type]->scoop_type != 0)
 	{
 		trade = ship_list[type]->scoop_type + 1;
-		cmdr.current_cargo[trade]++;
+		player->current.current_cargo[trade]++;
 		info_message (stock_market[trade].name);
 		remove_ship (un);
 		return;					
 	}
 	
 	explode_object (un);
-	damage_ship (universe[un].energy / 2, universe[un].location.z > 0);
+	damage_ship (env->objects[un].energy / 2, env->objects[un].location.z > 0);
 }
 

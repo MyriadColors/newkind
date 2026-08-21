@@ -35,11 +35,57 @@
 #include "pilot.h"
 #include "file.h"
 #include "keyboard.h"
+#include "game_state.h"
+
+#define current_screen (get_session_state()->current_screen)
+#define docked (get_session_state()->is_docked)
+#define finish (get_session_state()->is_finish)
+#define game_over (get_session_state()->is_game_over)
+
+#define cmdr (get_player_state()->current)
+#define saved_cmdr (get_player_state()->saved)
+#define myship (get_player_state()->vitals.ship_specs)
+#define myship_energy (get_player_state()->vitals.energy)
+#define front_shield (get_player_state()->vitals.front_shield)
+#define aft_shield (get_player_state()->vitals.aft_shield)
+#define laser_temp (get_player_state()->vitals.laser_temp)
+#define detonate_bomb (get_player_state()->vitals.detonate_bomb)
+#define auto_pilot (get_player_state()->vitals.auto_pilot)
+#define witchspace (get_player_state()->vitals.witchspace)
+#define hyper_ready (get_player_state()->vitals.hyper_ready)
+#define can_fast_dock (get_player_state()->vitals.can_fast_dock)
+#define mcount (get_player_state()->vitals.mcount)
+
+#define docked_planet (get_universe_state()->docked_planet)
+#define hyperspace_planet (get_universe_state()->hyperspace_planet)
+#define current_planet_data (get_universe_state()->current_planet_data)
+#define universe (get_universe_state()->objects)
+#define ship_count (get_universe_state()->ship_count)
+
+#define flight_speed (get_flight_state()->speed)
+#define flight_roll (get_flight_state()->roll)
+#define flight_climb (get_flight_state()->climb)
+#define flight_yaw (get_flight_state()->yaw)
+#define flight_roll_f (get_flight_state()->roll_f)
+#define flight_climb_f (get_flight_state()->climb_f)
+#define flight_yaw_f (get_flight_state()->yaw_f)
+
+#define speed_cap (get_config_state()->speed_cap)
+#define wireframe (get_config_state()->wireframe)
+#define anti_alias_gfx (get_config_state()->anti_alias_gfx)
+#define planet_render_style (get_config_state()->planet_render_style)
+#define control_scheme (get_config_state()->control_scheme)
+#define mouse_flight_mode (get_config_state()->mouse_flight_mode)
+#define invert_pitch (get_config_state()->invert_pitch)
+#define mouse_sensitivity (get_config_state()->mouse_sensitivity)
+#define flight_assist (get_config_state()->flight_assist)
+#define aspect_ratio_mode (get_config_state()->aspect_ratio_mode)
+#define scaling_filter (get_config_state()->scaling_filter)
+#define display_mode (get_config_state()->display_mode)
 
 int cross_timer;
 
 int draw_lasers;
-int mcount;
 int message_count;
 char message_string[80];
 int rolling;
@@ -68,7 +114,7 @@ void initialise_game(void)
 	docked = 1;
 	front_shield = 255;
 	aft_shield = 255;
-	energy = 255;
+	myship_energy = 255;
 	draw_lasers = 0;
 	mcount = 0;
 	hyper_ready = 0;
@@ -1417,7 +1463,7 @@ int main(void)
 
 				if ((mcount & 31) == 10)
 				{
-					if (energy < 50)
+					if (myship_energy < 50)
 					{
 						info_message ("ENERGY LOW");
 						snd_play_sample (SND_BEEP);

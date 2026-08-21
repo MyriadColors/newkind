@@ -36,6 +36,13 @@
 #include "main.h"
 #include "space.h"
 #include "sound.h"
+#include "game_state.h"
+
+#define universe (get_universe_state()->objects)
+#define ship_count (get_universe_state()->ship_count)
+#define auto_pilot (get_player_state()->vitals.auto_pilot)
+#define witchspace (get_player_state()->vitals.witchspace)
+#define hyper_ready (get_player_state()->vitals.hyper_ready)
 
 
 /*

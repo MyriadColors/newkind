@@ -16,6 +16,12 @@
 #include "config.h"
 #include "gfx.h"
 #include "elite.h"
+#include "game_state.h"
+
+#define aspect_ratio_mode (get_config_state()->aspect_ratio_mode)
+#define scaling_filter (get_config_state()->scaling_filter)
+#define scanner_filename (get_config_state()->scanner_filename)
+#define display_mode (get_config_state()->display_mode)
 
 static RenderTexture2D target;
 static Texture2D scanner_tex;

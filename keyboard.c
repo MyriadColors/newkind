@@ -9,9 +9,13 @@
 #include <math.h>
 
 #include "raylib.h"
-#include "keyboard.h"
 #include "elite.h"
 #include "gfx.h"
+#include "game_state.h"
+
+#define control_scheme (get_config_state()->control_scheme)
+#define mouse_flight_mode (get_config_state()->mouse_flight_mode)
+#define current_screen (get_session_state()->current_screen)
 
 int kbd_F1_pressed = 0;
 int kbd_F2_pressed = 0;

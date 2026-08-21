@@ -41,22 +41,55 @@
 #include "trade.h"
 #include "stars.h"
 #include "pilot.h"
+#include "game_state.h"
 
-extern int flight_climb;
-extern int flight_roll;
-extern int flight_speed;
-extern int flight_yaw;
-extern double flight_roll_f;
-extern double flight_climb_f;
-extern double flight_yaw_f;
+#define universe (get_universe_state()->objects)
+#define ship_count (get_universe_state()->ship_count)
+#define docked_planet (get_universe_state()->docked_planet)
+#define hyperspace_planet (get_universe_state()->hyperspace_planet)
+#define current_planet_data (get_universe_state()->current_planet_data)
+
+#define cmdr (get_player_state()->current)
+#define myship (get_player_state()->vitals.ship_specs)
+#define myship_energy (get_player_state()->vitals.energy)
+#define front_shield (get_player_state()->vitals.front_shield)
+#define aft_shield (get_player_state()->vitals.aft_shield)
+#define laser_temp (get_player_state()->vitals.laser_temp)
+#define detonate_bomb (get_player_state()->vitals.detonate_bomb)
+#define auto_pilot (get_player_state()->vitals.auto_pilot)
+#define witchspace (get_player_state()->vitals.witchspace)
+#define hyper_ready (get_player_state()->vitals.hyper_ready)
+#define can_fast_dock (get_player_state()->vitals.can_fast_dock)
+#define mcount (get_player_state()->vitals.mcount)
+
+#define flight_speed (get_flight_state()->speed)
+#define flight_roll (get_flight_state()->roll)
+#define flight_climb (get_flight_state()->climb)
+#define flight_yaw (get_flight_state()->yaw)
+#define flight_roll_f (get_flight_state()->roll_f)
+#define flight_climb_f (get_flight_state()->climb_f)
+#define flight_yaw_f (get_flight_state()->yaw_f)
+
+#define current_screen (get_session_state()->current_screen)
+#define docked (get_session_state()->is_docked)
+#define game_over (get_session_state()->is_game_over)
+#define finish (get_session_state()->is_finish)
+
+#define instant_dock (get_config_state()->instant_dock)
+#define planet_render_style (get_config_state()->planet_render_style)
+#define scanner_cx (get_config_state()->scanner_cx)
+#define scanner_cy (get_config_state()->scanner_cy)
+#define compass_centre_x (get_config_state()->compass_centre_x)
+#define compass_centre_y (get_config_state()->compass_centre_y)
+#define mouse_sensitivity (get_config_state()->mouse_sensitivity)
+#define flight_assist (get_config_state()->flight_assist)
+#define invert_pitch (get_config_state()->invert_pitch)
 
 struct galaxy_seed destination_planet;
-int hyper_ready;
 int hyper_countdown;
 char hyper_name[16];
 int hyper_distance;
 int hyper_galactic;
-int can_fast_dock = 0;
 
 
 
@@ -231,7 +264,7 @@ void dock_player (void)
 	flight_yaw_f = 0.0;
 	front_shield = 255;
 	aft_shield = 255;
-	energy = 255;
+	myship_energy = 255;
 	myship.altitude = 255;
 	myship.cabtemp = 30;
 	reset_weapons();
@@ -387,33 +420,33 @@ void update_cabin_temp (void)
 
 void regenerate_shields (void)
 {
-	if (energy > 127)
+	if (myship_energy > 127)
 	{
 		if (front_shield < 255)
 		{
 			front_shield++;
-			energy--;
+			myship_energy--;
 		}
 	
 		if (aft_shield < 255)
 		{
 			aft_shield++;
-			energy--;
+			myship_energy--;
 		}
 	}
 		
-	energy++;
-	energy += cmdr.energy_unit;
-	if (energy > 255)
-		energy = 255;
+	myship_energy++;
+	myship_energy += cmdr.energy_unit;
+	if (myship_energy > 255)
+		myship_energy = 255;
 }
 
 
 void decrease_energy (int amount)
 {
-	energy += amount;
+	myship_energy += amount;
 
-	if (energy <= 0)
+	if (myship_energy <= 0)
 		do_game_over();
 }
 
@@ -880,10 +913,10 @@ void display_energy (void)
 {
 	int e1,e2,e3,e4;
 
-	e1 = energy > 64 ? 64 : energy;
-	e2 = energy > 128 ? 64 : energy - 64;
-	e3 = energy > 192 ? 64 : energy - 128;
-	e4 = energy - 192;  	
+	e1 = myship_energy > 64 ? 64 : myship_energy;
+	e2 = myship_energy > 128 ? 64 : myship_energy - 64;
+	e3 = myship_energy > 192 ? 64 : myship_energy - 128;
+	e4 = myship_energy - 192;  	
 	
 	if (e4 > 0)
 		display_dial_bar (e4, 416, 61);

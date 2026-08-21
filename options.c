@@ -27,6 +27,8 @@
 #include "docked.h"
 #include "file.h" 
 
+#include "game_state.h"
+
 static int hilite_item;
  
 #define NUM_OPTIONS 4
@@ -76,7 +78,7 @@ static const struct setting setting_list[NUM_SETTINGS] =
 
 void quit_screen (void)
 {
-	current_screen = SCR_QUIT;
+	get_session_state()->current_screen = SCR_QUIT;
 
 	gfx_clear_display();
 	gfx_display_centre_text (10, "GAME OPTIONS", 140, GFX_COL_GOLD);
@@ -93,6 +95,7 @@ void display_setting_item (int item)
 {
 	int x,y;
 	int v;
+	const ConfigState *cfg = get_config_state();
 
 	if (item == (NUM_SETTINGS - 1))
 	{
@@ -104,55 +107,55 @@ void display_setting_item (int item)
 	switch (item)
 	{
 		case 0:
-			v = wireframe;
+			v = cfg->wireframe;
 			break;
 		
 		case 1:
-			v = anti_alias_gfx;
+			v = cfg->anti_alias_gfx;
 			break;
 		
 		case 2:
-			v = planet_render_style;
+			v = cfg->planet_render_style;
 			break;
 		
 		case 3:
-			v = hoopy_casinos;
+			v = cfg->hoopy_casinos;
 			break;
 		
 		case 4:
-			v = instant_dock;
+			v = cfg->instant_dock;
 			break;
 
 		case 5:
-			v = control_scheme;
+			v = cfg->control_scheme;
 			break;
 
 		case 6:
-			v = mouse_flight_mode;
+			v = cfg->mouse_flight_mode;
 			break;
 
 		case 7:
-			v = invert_pitch;
+			v = cfg->invert_pitch;
 			break;
 
 		case 8:
-			v = mouse_sensitivity;
+			v = cfg->mouse_sensitivity;
 			break;
 
 		case 9:
-			v = flight_assist;
+			v = cfg->flight_assist;
 			break;
 
 		case 10:
-			v = display_mode;
+			v = cfg->display_mode;
 			break;
 
 		case 11:
-			v = aspect_ratio_mode;
+			v = cfg->aspect_ratio_mode;
 			break;
 
 		case 12:
-			v = scaling_filter;
+			v = cfg->scaling_filter;
 			break;
 
 		default:
@@ -252,6 +255,8 @@ void select_down_setting (void)
 
 void toggle_setting (void)
 {
+	ConfigState *cfg = get_config_state();
+
 	if (hilite_item == (NUM_SETTINGS - 1))
 	{
 		write_config_file();
@@ -262,56 +267,56 @@ void toggle_setting (void)
 	switch (hilite_item)
 	{
 		case 0:
-			wireframe ^= 1;
+			cfg->wireframe ^= 1;
 			break;
 		
 		case 1:
-			anti_alias_gfx ^= 1;
+			cfg->anti_alias_gfx ^= 1;
 			break;
 		
 		case 2:
-			planet_render_style = (planet_render_style + 1) % 4;
+			cfg->planet_render_style = (cfg->planet_render_style + 1) % 4;
 			break;
 		
 		case 3:
-			hoopy_casinos ^= 1;
+			cfg->hoopy_casinos ^= 1;
 			break;
 
 		case 4:
-			instant_dock ^= 1;
+			cfg->instant_dock ^= 1;
 			break;
 
 		case 5:
-			control_scheme ^= 1;
+			cfg->control_scheme ^= 1;
 			break;
 
 		case 6:
-			mouse_flight_mode = (mouse_flight_mode + 1) % 3;
+			cfg->mouse_flight_mode = (cfg->mouse_flight_mode + 1) % 3;
 			break;
 
 		case 7:
-			invert_pitch ^= 1;
+			cfg->invert_pitch ^= 1;
 			break;
 
 		case 8:
-			mouse_sensitivity = (mouse_sensitivity + 1) % 3;
+			cfg->mouse_sensitivity = (cfg->mouse_sensitivity + 1) % 3;
 			break;
 
 		case 9:
-			flight_assist ^= 1;
+			cfg->flight_assist ^= 1;
 			break;
 
 		case 10:
-			display_mode = (display_mode + 1) % 6;
-			gfx_apply_display_mode(display_mode);
+			cfg->display_mode = (cfg->display_mode + 1) % 6;
+			gfx_apply_display_mode(cfg->display_mode);
 			break;
 
 		case 11:
-			aspect_ratio_mode = (aspect_ratio_mode + 1) % 5;
+			cfg->aspect_ratio_mode = (cfg->aspect_ratio_mode + 1) % 5;
 			break;
 
 		case 12:
-			scaling_filter = (scaling_filter + 1) % 2;
+			cfg->scaling_filter = (cfg->scaling_filter + 1) % 2;
 			break;
 	}
 
@@ -323,7 +328,7 @@ void game_settings_screen (void)
 {
 	int i;
 
-	current_screen = SCR_SETTINGS;
+	get_session_state()->current_screen = SCR_SETTINGS;
 
 	gfx_clear_display();
 	gfx_display_centre_text (10, "GAME SETTINGS", 140, GFX_COL_GOLD);
@@ -346,7 +351,7 @@ void display_option_item (int i)
 	
 	y = (384 - (30 * NUM_OPTIONS)) / 2;
 	y += i * 30;
-	col = ((!docked) && option_list[i].docked_only) ? GFX_COL_GREY_1 : GFX_COL_WHITE;
+	col = ((!get_session_state()->is_docked) && option_list[i].docked_only) ? GFX_COL_GREY_1 : GFX_COL_WHITE;
 
 	gfx_display_centre_text (y, option_list[i].text, 120, col);
 }
@@ -392,7 +397,7 @@ void select_next_option (void)
 
 void do_option (void)
 {
-	if ((!docked) && option_list[hilite_item].docked_only)
+	if ((!get_session_state()->is_docked) && option_list[hilite_item].docked_only)
 		return;
 
 	switch (hilite_item)
@@ -421,7 +426,7 @@ void display_options (void)
 {
 	int i;
 
-	current_screen = SCR_OPTIONS;
+	get_session_state()->current_screen = SCR_OPTIONS;
 	
 	gfx_clear_display();
 	gfx_display_centre_text (10, "GAME OPTIONS", 140, GFX_COL_GOLD);

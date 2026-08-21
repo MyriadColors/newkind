@@ -19,14 +19,20 @@
 #include "elite.h" 
 #include "gfx.h"
 #include "vector.h"
-#include "stars.h"
 #include "random.h"
+#include "game_state.h"
+
+#define flight_speed (get_flight_state()->speed)
+#define flight_roll (get_flight_state()->roll)
+#define flight_climb (get_flight_state()->climb)
+#define flight_yaw (get_flight_state()->yaw)
+#define flight_roll_f (get_flight_state()->roll_f)
+#define flight_climb_f (get_flight_state()->climb_f)
+#define flight_yaw_f (get_flight_state()->yaw_f)
+#define witchspace (get_player_state()->vitals.witchspace)
+#define current_screen (get_session_state()->current_screen)
 
 int warp_stars;
-extern int flight_yaw;
-extern double flight_roll_f;
-extern double flight_climb_f;
-extern double flight_yaw_f;
 
 struct star
 {

@@ -28,6 +28,20 @@
 #include "main.h"
 #include "keyboard.h"
 #include "docked.h"
+#include "game_state.h"
+
+#define cmdr (get_player_state()->current)
+#define saved_cmdr (get_player_state()->saved)
+#define myship (get_player_state()->vitals.ship_specs)
+#define myship_energy (get_player_state()->vitals.energy)
+#define docked_planet (get_universe_state()->docked_planet)
+#define hyperspace_planet (get_universe_state()->hyperspace_planet)
+#define current_planet_data (get_universe_state()->current_planet_data)
+#define current_screen (get_session_state()->current_screen)
+#define docked (get_session_state()->is_docked)
+#define carry_flag (get_universe_state()->carry_flag)
+#define universe (get_universe_state()->objects)
+#define witchspace (get_player_state()->vitals.witchspace)
 
 
 
@@ -735,7 +749,7 @@ void display_commander_status (void)
 			}
 		}
  
-		if ((condition == 2) && (energy < 128))
+		if ((condition == 2) && (myship_energy < 128))
 			condition = 3;
 	}
 	

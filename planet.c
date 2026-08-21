@@ -28,7 +28,6 @@
 #include "missions.h"
 
 
-extern struct galaxy_seed hyperspace_planet;
 
 struct random_seed
 {
@@ -162,7 +161,6 @@ void waggle_galaxy (struct galaxy_seed *glx_ptr)
 {
     unsigned int x;
 	unsigned int y;
-	extern int carry_flag;
 
 	x = glx_ptr->a + glx_ptr->c;
     y = glx_ptr->b + glx_ptr->d;
@@ -187,9 +185,9 @@ void waggle_galaxy (struct galaxy_seed *glx_ptr)
 		y++;
 
 	if (y > 0xFF)
-		carry_flag = 1;
+		get_universe_state()->carry_flag = 1;
 	else
-		carry_flag = 0;
+		get_universe_state()->carry_flag = 0;
 
     x &= 0xFF;
 	y &= 0xFF;
@@ -209,8 +207,9 @@ struct galaxy_seed find_planet (int cx, int cy)
 	int distance;
 	int dx, dy;
 	int i;
+	const PlayerState *player = get_player_state();
 
-	glx = cmdr.galaxy;
+	glx = player->current.galaxy;
 
 	for (i = 0; i < 256; i++)
 	{
@@ -243,8 +242,9 @@ int find_planet_number (struct galaxy_seed planet)
 {
 	struct galaxy_seed glx;
 	int i;
+	const PlayerState *player = get_player_state();
 
-	glx = cmdr.galaxy;
+	glx = player->current.galaxy;
 
 	for (i = 0; i < 256; i++)
 	{
@@ -374,7 +374,7 @@ void expand_description (const char *source)
 			source++;
 			num = atoi(str);
 			
-			if (hoopy_casinos)
+			if (get_config_state()->hoopy_casinos)
 			{
 				option = gen_msx_rnd_number();
 			}
@@ -398,14 +398,14 @@ void expand_description (const char *source)
 			switch (*source)
 			{
 				case 'H':
-					name_planet (str, hyperspace_planet);
+					name_planet (str, get_universe_state()->hyperspace_planet);
 					capitalise_name (str);
 					for (ptr = str; *ptr != '\0';)
 						*desc_ptr++ = *ptr++;
 					break;
 
 				case 'I':
-					name_planet (str, hyperspace_planet);
+					name_planet (str, get_universe_state()->hyperspace_planet);
 					capitalise_name (str);
 					for (ptr = str; *ptr != '\0';)
 						*desc_ptr++ = *ptr++;
@@ -445,8 +445,10 @@ void expand_description (const char *source)
 const char *describe_planet (struct galaxy_seed planet)
 {
 	const char *mission_text;
+	const PlayerState *player = get_player_state();
+	const ConfigState *cfg = get_config_state();
 	
-	if (cmdr.mission == 1)
+	if (player->current.mission == 1)
 	{
 		mission_text = mission_planet_desc (planet);
 		if (mission_text != nullptr)
@@ -458,7 +460,7 @@ const char *describe_planet (struct galaxy_seed planet)
 	rnd_seed.c = planet.e;
 	rnd_seed.d = planet.f;
 
-	if (hoopy_casinos)
+	if (cfg->hoopy_casinos)
 	{
 		rnd_seed.a ^= planet.a;
 		rnd_seed.b ^= planet.b;

@@ -22,45 +22,44 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "elite.h"
-#include "config.h"
-#include "file.h"
+#include "game_state.h"
 
 void write_config_file (void)
 {
 	FILE *fp;
+	const ConfigState *cfg = get_config_state();
 	
 	fp = fopen ("newkind.cfg", "w");
 	if (fp == nullptr)
 		return;
 
-	fprintf (fp, "%d\t\t# Game Speed, the lower the number the faster the game.\n", speed_cap);
+	fprintf (fp, "%d\t\t# Game Speed, the lower the number the faster the game.\n", cfg->speed_cap);
 
-	fprintf (fp, "%d\t\t# Graphics: 0 = Solid, 1 = Wireframe\n", wireframe);
+	fprintf (fp, "%d\t\t# Graphics: 0 = Solid, 1 = Wireframe\n", cfg->wireframe);
 
-	fprintf (fp, "%d\t\t# Anti-Alias Wireframe: 0 = Normal, 1 = Anti-Aliased\n", anti_alias_gfx);
+	fprintf (fp, "%d\t\t# Anti-Alias Wireframe: 0 = Normal, 1 = Anti-Aliased\n", cfg->anti_alias_gfx);
 
-	fprintf (fp, "%d\t\t# Planet style: 0 = Wireframe, 1 = Green, 2 = SNES, 3 = Fractal\n", planet_render_style);
+	fprintf (fp, "%d\t\t# Planet style: 0 = Wireframe, 1 = Green, 2 = SNES, 3 = Fractal\n", cfg->planet_render_style);
 	
-	fprintf (fp, "%d\t\t# Planet Descriptions: 0 = Tree Grubs, 1 = Hoopy Casinos\n", hoopy_casinos);
+	fprintf (fp, "%d\t\t# Planet Descriptions: 0 = Tree Grubs, 1 = Hoopy Casinos\n", cfg->hoopy_casinos);
 
-	fprintf (fp, "%d\t\t# Instant dock: 0 = off, 1 = on\n", instant_dock);
+	fprintf (fp, "%d\t\t# Instant dock: 0 = off, 1 = on\n", cfg->instant_dock);
 
-	fprintf (fp, "%d\t\t# Controls: 0 = Classic, 1 = Modern\n", control_scheme);
+	fprintf (fp, "%d\t\t# Controls: 0 = Classic, 1 = Modern\n", cfg->control_scheme);
 
-	fprintf (fp, "%d\t\t# Mouse flight mode: 0 = Direct, 1 = Virtual Stick, 2 = Off\n", mouse_flight_mode);
+	fprintf (fp, "%d\t\t# Mouse flight mode: 0 = Direct, 1 = Virtual Stick, 2 = Off\n", cfg->mouse_flight_mode);
 
-	fprintf (fp, "%d\t\t# Pitch mode: 0 = Standard, 1 = Inverted\n", invert_pitch);
+	fprintf (fp, "%d\t\t# Pitch mode: 0 = Standard, 1 = Inverted\n", cfg->invert_pitch);
 
-	fprintf (fp, "%d\t\t# Mouse sensitivity: 0 = Low, 1 = Medium, 2 = High\n", mouse_sensitivity);
+	fprintf (fp, "%d\t\t# Mouse sensitivity: 0 = Low, 1 = Medium, 2 = High\n", cfg->mouse_sensitivity);
 
-	fprintf (fp, "%d\t\t# Flight assist: 0 = Off, 1 = On\n", flight_assist);
+	fprintf (fp, "%d\t\t# Flight assist: 0 = Off, 1 = On\n", cfg->flight_assist);
 	
-	fprintf (fp, "%d\t\t# Aspect ratio: 0 = 1:1, 1 = 4:3, 2 = 16:9, 3 = Integer, 4 = Stretch\n", aspect_ratio_mode);
+	fprintf (fp, "%d\t\t# Aspect ratio: 0 = 1:1, 1 = 4:3, 2 = 16:9, 3 = Integer, 4 = Stretch\n", cfg->aspect_ratio_mode);
 
-	fprintf (fp, "%d\t\t# Texture filter: 0 = Point (Crisp), 1 = Bilinear (Smooth)\n", scaling_filter);
+	fprintf (fp, "%d\t\t# Texture filter: 0 = Point (Crisp), 1 = Bilinear (Smooth)\n", cfg->scaling_filter);
 
-	fprintf (fp, "%d\t\t# Display mode: 0 = Maximized, 1 = Fullscreen, 2 = 800x600, 3 = 1024x768, 4 = 1280x720, 5 = 1920x1080\n", display_mode);
+	fprintf (fp, "%d\t\t# Display mode: 0 = Maximized, 1 = Fullscreen, 2 = 800x600, 3 = 1024x768, 4 = 1280x720, 5 = 1920x1080\n", cfg->display_mode);
 
 	fprintf (fp, "newscan.cfg\t# Name of scanner config file to use.\n");
 
@@ -117,24 +116,25 @@ void read_scanner_config_file (const char *filename)
 {
 	FILE *fp;
 	char str[256];
+	ConfigState *cfg = get_config_state();
 	
 	fp = fopen (filename, "r");
 	if (fp == nullptr)
 		return;
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		strcpy (scanner_filename, str);
+		strcpy (cfg->scanner_filename, str);
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
 	{
-		sscanf (str, "%d,%d", &scanner_cx, &scanner_cy);
-		scanner_cy += 385;
+		sscanf (str, "%d,%d", &cfg->scanner_cx, &cfg->scanner_cy);
+		cfg->scanner_cy += 385;
 	}
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
 	{
-		sscanf (str, "%d,%d", &compass_centre_x, &compass_centre_y);
-		compass_centre_y += 385;
+		sscanf (str, "%d,%d", &cfg->compass_centre_x, &cfg->compass_centre_y);
+		cfg->compass_centre_y += 385;
 	}
 	
 	fclose (fp);
@@ -149,28 +149,29 @@ void read_config_file (void)
 	FILE *fp;
 	char str[256];
 	int extra_idx = 0;
+	ConfigState *cfg = get_config_state();
 	
 	fp = fopen ("newkind.cfg", "r");
 	if (fp == nullptr)
 		return;
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &speed_cap);
+		sscanf (str, "%d", &cfg->speed_cap);
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &wireframe);
+		sscanf (str, "%d", &cfg->wireframe);
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &anti_alias_gfx);
+		sscanf (str, "%d", &cfg->anti_alias_gfx);
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &planet_render_style);
+		sscanf (str, "%d", &cfg->planet_render_style);
 	
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &hoopy_casinos);
+		sscanf (str, "%d", &cfg->hoopy_casinos);
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
-		sscanf (str, "%d", &instant_dock);
+		sscanf (str, "%d", &cfg->instant_dock);
 
 	while (read_cfg_line (str, sizeof(str), fp) == 0)
 	{
@@ -181,14 +182,14 @@ void read_config_file (void)
 		}
 		else
 		{
-			if (extra_idx == 0) sscanf (str, "%d", &control_scheme);
-			else if (extra_idx == 1) sscanf (str, "%d", &mouse_flight_mode);
-			else if (extra_idx == 2) sscanf (str, "%d", &invert_pitch);
-			else if (extra_idx == 3) sscanf (str, "%d", &mouse_sensitivity);
-			else if (extra_idx == 4) sscanf (str, "%d", &flight_assist);
-			else if (extra_idx == 5) sscanf (str, "%d", &aspect_ratio_mode);
-			else if (extra_idx == 6) sscanf (str, "%d", &scaling_filter);
-			else if (extra_idx == 7) sscanf (str, "%d", &display_mode);
+			if (extra_idx == 0) sscanf (str, "%d", &cfg->control_scheme);
+			else if (extra_idx == 1) sscanf (str, "%d", &cfg->mouse_flight_mode);
+			else if (extra_idx == 2) sscanf (str, "%d", &cfg->invert_pitch);
+			else if (extra_idx == 3) sscanf (str, "%d", &cfg->mouse_sensitivity);
+			else if (extra_idx == 4) sscanf (str, "%d", &cfg->flight_assist);
+			else if (extra_idx == 5) sscanf (str, "%d", &cfg->aspect_ratio_mode);
+			else if (extra_idx == 6) sscanf (str, "%d", &cfg->scaling_filter);
+			else if (extra_idx == 7) sscanf (str, "%d", &cfg->display_mode);
 			extra_idx++;
 		}
 	}
@@ -221,58 +222,61 @@ int save_commander_file (const char *path)
 	unsigned char block[256];
 	int i;
 	int chk;
+	const PlayerState *player = get_player_state();
+	const UniverseState *env = get_universe_state();
+	const struct commander *cmd = &player->current;
 	
 	fp = fopen (path, "wb");
 	if (fp == nullptr)
 		return 1;
 	
-	block[0]  = cmdr.mission;
-	block[1]  = docked_planet.d;
-	block[2]  = docked_planet.b;
-	block[3]  = cmdr.galaxy.a;
-	block[4]  = cmdr.galaxy.b;
-	block[5]  = cmdr.galaxy.c;
-	block[6]  = cmdr.galaxy.d;
-	block[7]  = cmdr.galaxy.e;
-	block[8]  = cmdr.galaxy.f;
-	block[9]  = (cmdr.credits >> 24) & 255;
-	block[10] = (cmdr.credits >> 16) & 255;
-	block[11] = (cmdr.credits >> 8) & 255;
-	block[12] = cmdr.credits & 255;
-	block[13] = cmdr.fuel;
+	block[0]  = cmd->mission;
+	block[1]  = env->docked_planet.d;
+	block[2]  = env->docked_planet.b;
+	block[3]  = cmd->galaxy.a;
+	block[4]  = cmd->galaxy.b;
+	block[5]  = cmd->galaxy.c;
+	block[6]  = cmd->galaxy.d;
+	block[7]  = cmd->galaxy.e;
+	block[8]  = cmd->galaxy.f;
+	block[9]  = (cmd->credits >> 24) & 255;
+	block[10] = (cmd->credits >> 16) & 255;
+	block[11] = (cmd->credits >> 8) & 255;
+	block[12] = cmd->credits & 255;
+	block[13] = cmd->fuel;
 	block[14] = 4;
-	block[15] = cmdr.galaxy_number;
-	block[16] = cmdr.front_laser;
-	block[17] = cmdr.rear_laser;
-	block[18] = cmdr.left_laser;
-	block[19] = cmdr.right_laser;
+	block[15] = cmd->galaxy_number;
+	block[16] = cmd->front_laser;
+	block[17] = cmd->rear_laser;
+	block[18] = cmd->left_laser;
+	block[19] = cmd->right_laser;
 	block[20] = 0;
 	block[21] = 0;
-	block[22] = cmdr.cargo_capacity + 2;
+	block[22] = cmd->cargo_capacity + 2;
 
 	for (i = 0; i < NO_OF_STOCK_ITEMS; i++)
-		block[23+i] = cmdr.current_cargo[i];
+		block[23+i] = cmd->current_cargo[i];
 	
-	block[40] = cmdr.ecm ? 255 : 0;
-	block[41] = cmdr.fuel_scoop ? 255 : 0;
-	block[42] = cmdr.energy_bomb ? 0x7F : 0;
-	block[43] = cmdr.energy_unit;
-	block[44] = cmdr.docking_computer ? 255 : 0;
-	block[45] = cmdr.galactic_hyperdrive ? 255 : 0;
-	block[46] = cmdr.escape_pod ? 255 : 0;
+	block[40] = cmd->ecm ? 255 : 0;
+	block[41] = cmd->fuel_scoop ? 255 : 0;
+	block[42] = cmd->energy_bomb ? 0x7F : 0;
+	block[43] = cmd->energy_unit;
+	block[44] = cmd->docking_computer ? 255 : 0;
+	block[45] = cmd->galactic_hyperdrive ? 255 : 0;
+	block[46] = cmd->escape_pod ? 255 : 0;
 	block[47] = 0;
 	block[48] = 0;
 	block[49] = 0;
 	block[50] = 0;
-	block[51] = cmdr.missiles;
-	block[52] = cmdr.legal_status;
+	block[51] = cmd->missiles;
+	block[52] = cmd->legal_status;
 	
 	for (i = 0; i < NO_OF_STOCK_ITEMS; i++)
 		block[53+i] = stock_market[i].current_quantity;
 	
-	block[70] = cmdr.market_rnd;
-	block[71] = cmdr.score & 255;
-	block[72] = cmdr.score >> 8;
+	block[70] = cmd->market_rnd;
+	block[71] = cmd->score & 255;
+	block[72] = cmd->score >> 8;
 	block[73] = 0x20;
 
 	chk = checksum (block);
@@ -299,6 +303,8 @@ int load_commander_file (const char *path)
 	unsigned char block[256];
 	int i;
 	int chk;
+	PlayerState *player = get_player_state();
+	struct commander *saved = &player->saved;
 	
 	fp = fopen (path, "rb");
 	if (fp == nullptr)
@@ -312,53 +318,53 @@ int load_commander_file (const char *path)
 	if ((block[74] != (chk ^ 0xA9)) || (block[75] != chk))
 		return 1;
 	
-	saved_cmdr.mission = block[0];
+	saved->mission = block[0];
 
-	saved_cmdr.ship_x = block[1];
-	saved_cmdr.ship_y = block[2];
+	saved->ship_x = block[1];
+	saved->ship_y = block[2];
 	
-	saved_cmdr.galaxy.a = block[3];
-	saved_cmdr.galaxy.b = block[4];
-	saved_cmdr.galaxy.c = block[5];
-	saved_cmdr.galaxy.d = block[6];
-	saved_cmdr.galaxy.e = block[7];
-	saved_cmdr.galaxy.f = block[8];
+	saved->galaxy.a = block[3];
+	saved->galaxy.b = block[4];
+	saved->galaxy.c = block[5];
+	saved->galaxy.d = block[6];
+	saved->galaxy.e = block[7];
+	saved->galaxy.f = block[8];
 	
-	saved_cmdr.credits = (int)(((uint32_t)block[9] << 24) |
-	                           ((uint32_t)block[10] << 16) |
-	                           ((uint32_t)block[11] << 8) |
-	                           ((uint32_t)block[12]));
+	saved->credits = (int)(((uint32_t)block[9] << 24) |
+	                       ((uint32_t)block[10] << 16) |
+	                       ((uint32_t)block[11] << 8) |
+	                       ((uint32_t)block[12]));
 
-	saved_cmdr.fuel = block[13];
+	saved->fuel = block[13];
 
-	saved_cmdr.galaxy_number = block[15];
-	saved_cmdr.front_laser = block[16];
-	saved_cmdr.rear_laser = block[17];
-	saved_cmdr.left_laser = block[18];
-	saved_cmdr.right_laser = block[19];
+	saved->galaxy_number = block[15];
+	saved->front_laser = block[16];
+	saved->rear_laser = block[17];
+	saved->left_laser = block[18];
+	saved->right_laser = block[19];
 
-	saved_cmdr.cargo_capacity = block[22] - 2;
+	saved->cargo_capacity = block[22] - 2;
 
 	for (i = 0; i < NO_OF_STOCK_ITEMS; i++)
-		saved_cmdr.current_cargo[i] = block[23+i];
+		saved->current_cargo[i] = block[23+i];
 	
-	saved_cmdr.ecm = block[40];
-	saved_cmdr.fuel_scoop = block[41];
-	saved_cmdr.energy_bomb = block[42];
-	saved_cmdr.energy_unit = block[43];
-	saved_cmdr.docking_computer = block[44];
-	saved_cmdr.galactic_hyperdrive = block[45];
-	saved_cmdr.escape_pod = block[46];
-	saved_cmdr.missiles = block[51];
-	saved_cmdr.legal_status = block[52];
+	saved->ecm = block[40];
+	saved->fuel_scoop = block[41];
+	saved->energy_bomb = block[42];
+	saved->energy_unit = block[43];
+	saved->docking_computer = block[44];
+	saved->galactic_hyperdrive = block[45];
+	saved->escape_pod = block[46];
+	saved->missiles = block[51];
+	saved->legal_status = block[52];
 	
 	for (i = 0; i < NO_OF_STOCK_ITEMS; i++)
-		saved_cmdr.station_stock[i] = block[53+i];
+		saved->station_stock[i] = block[53+i];
 	
-	saved_cmdr.market_rnd = block[70];
+	saved->market_rnd = block[70];
 
-	saved_cmdr.score = block[71];
-	saved_cmdr.score += block[72] << 8;
+	saved->score = block[71];
+	saved->score += block[72] << 8;
 
 	if (fclose (fp) == EOF)
 		return 1;	
