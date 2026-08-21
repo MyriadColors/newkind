@@ -45,6 +45,10 @@
 extern int flight_climb;
 extern int flight_roll;
 extern int flight_speed;
+extern int flight_yaw;
+extern double flight_roll_f;
+extern double flight_climb_f;
+extern double flight_yaw_f;
 
 struct galaxy_seed destination_planet;
 int hyper_ready;
@@ -78,7 +82,7 @@ void rotate_x_first (double *a, double *b, int direction)
 }
 
 
-void rotate_vec (struct vector *vec, double alpha, double beta)
+void rotate_vec (struct vector *vec, double alpha, double beta, double gamma)
 {
 	double x,y,z;
 	
@@ -90,6 +94,8 @@ void rotate_vec (struct vector *vec, double alpha, double beta)
 	x = x + alpha * y;
 	y = y - beta * z;
 	z = z + beta * y;
+	x = x - gamma * z;
+	z = z + gamma * x;
 	
 	vec->x = x;
 	vec->y = y;
@@ -107,11 +113,13 @@ void move_univ_object (struct univ_object *obj)
 	double k2;
 	double alpha;
 	double beta;
+	double gamma;
 	int rotx,rotz;
 	double speed;
 	
-	alpha = flight_roll / 256.0;
-	beta = flight_climb / 256.0;
+	alpha = flight_roll_f / 256.0;
+	beta = flight_climb_f / 256.0;
+	gamma = flight_yaw_f / 256.0;
 	
 	x = obj->location.x;
 	y = obj->location.y;
@@ -148,6 +156,9 @@ void move_univ_object (struct univ_object *obj)
 	y = k2 - z * beta;
 	x = x + alpha * y;
 
+	x = x - gamma * z;
+	z = z + gamma * x;
+
 	z = z - flight_speed;
 
 	obj->location.x = x;
@@ -159,9 +170,9 @@ void move_univ_object (struct univ_object *obj)
 	if (obj->type == SHIP_PLANET)
 		beta = 0.0;
 	
-	rotate_vec (&obj->rotmat[2], alpha, beta);
-	rotate_vec (&obj->rotmat[1], alpha, beta);
-	rotate_vec (&obj->rotmat[0], alpha, beta);
+	rotate_vec (&obj->rotmat[2], alpha, beta, gamma);
+	rotate_vec (&obj->rotmat[1], alpha, beta, gamma);
+	rotate_vec (&obj->rotmat[0], alpha, beta, gamma);
 
 	if (obj->flags & FLG_DEAD)
 		return;
@@ -213,6 +224,10 @@ void dock_player (void)
 	flight_speed = 0;
 	flight_roll = 0;
 	flight_climb = 0;
+	flight_yaw = 0;
+	flight_roll_f = 0.0;
+	flight_climb_f = 0.0;
+	flight_yaw_f = 0.0;
 	front_shield = 255;
 	aft_shield = 255;
 	energy = 255;
@@ -994,28 +1009,58 @@ void update_console (void)
 
 void increase_flight_roll (void)
 {
-	if (flight_roll < myship.max_roll)
-		flight_roll++;
+	if (flight_roll_f < myship.max_roll)
+		flight_roll_f += 1.0;
+	if (flight_roll_f > myship.max_roll)
+		flight_roll_f = myship.max_roll;
+	flight_roll = (int)round(flight_roll_f);
 }
 
 
 void decrease_flight_roll (void)
 {
-	if (flight_roll > -myship.max_roll)
-		flight_roll--;
+	if (flight_roll_f > -myship.max_roll)
+		flight_roll_f -= 1.0;
+	if (flight_roll_f < -myship.max_roll)
+		flight_roll_f = -myship.max_roll;
+	flight_roll = (int)round(flight_roll_f);
 }
 
 
 void increase_flight_climb (void)
 {
-	if (flight_climb < myship.max_climb)
-		flight_climb++;
+	if (flight_climb_f < myship.max_climb)
+		flight_climb_f += 1.0;
+	if (flight_climb_f > myship.max_climb)
+		flight_climb_f = myship.max_climb;
+	flight_climb = (int)round(flight_climb_f);
 }
 
 void decrease_flight_climb (void)
 {
-	if (flight_climb > -myship.max_climb)
-		flight_climb--;
+	if (flight_climb_f > -myship.max_climb)
+		flight_climb_f -= 1.0;
+	if (flight_climb_f < -myship.max_climb)
+		flight_climb_f = -myship.max_climb;
+	flight_climb = (int)round(flight_climb_f);
+}
+
+void increase_flight_yaw (void)
+{
+	if (flight_yaw_f < myship.max_roll)
+		flight_yaw_f += 1.0;
+	if (flight_yaw_f > myship.max_roll)
+		flight_yaw_f = myship.max_roll;
+	flight_yaw = (int)round(flight_yaw_f);
+}
+
+void decrease_flight_yaw (void)
+{
+	if (flight_yaw_f > -myship.max_roll)
+		flight_yaw_f -= 1.0;
+	if (flight_yaw_f < -myship.max_roll)
+		flight_yaw_f = -myship.max_roll;
+	flight_yaw = (int)round(flight_yaw_f);
 }
 
 
@@ -1121,6 +1166,10 @@ void enter_witchspace (void)
 	flight_speed = 12;
 	flight_roll = 0;
 	flight_climb = 0;
+	flight_yaw = 0;
+	flight_roll_f = 0.0;
+	flight_climb_f = 0.0;
+	flight_yaw_f = 0.0;
 	create_new_stars();
 	clear_universe();
 
@@ -1169,6 +1218,10 @@ void complete_hyperspace (void)
 	flight_speed = 12;
 	flight_roll = 0;
 	flight_climb = 0;
+	flight_yaw = 0;
+	flight_roll_f = 0.0;
+	flight_climb_f = 0.0;
+	flight_yaw_f = 0.0;
 	create_new_stars();
 	clear_universe();
 

@@ -30,7 +30,7 @@
 static int hilite_item;
  
 #define NUM_OPTIONS 4
-#define NUM_SETTINGS 6
+#define NUM_SETTINGS 12
 
 #define OPTION_BAR_WIDTH	(400)
 #define OPTION_BAR_HEIGHT	(15)
@@ -62,6 +62,12 @@ static struct setting setting_list[NUM_SETTINGS] =
 	{"Planet Style:",	{"Wireframe", "Green", "SNES", "Fractal", ""}},
 	{"Planet Desc.:",	{"BBC", "MSX", "", "", ""}},
 	{"Instant Dock:",	{"Off", "On", "", "", ""}},	
+	{"Controls:",		{"Classic", "Modern", "", "", ""}},
+	{"Mouse Flight:",	{"Direct", "Virtual", "Off", "", ""}},
+	{"Pitch Mode:",		{"Standard", "Inverted", "", "", ""}},
+	{"Mouse Sens:",		{"Low", "Medium", "High", "", ""}},
+	{"Flight Assist:",	{"Off", "On", "", "", ""}},
+	{"Window Size:",	{"Windowed", "Maximized", "Fullscreen", "", ""}},
 	{"Save Settings",	{"", "", "", "", ""}}
 };
 
@@ -88,7 +94,7 @@ void display_setting_item (int item)
 
 	if (item == (NUM_SETTINGS - 1))
 	{
-		y = ((NUM_SETTINGS + 1) / 2) * 30 + 96 + 32;
+		y = 250;
 		gfx_display_centre_text (y, setting_list[item].name, 120, GFX_COL_WHITE);
 		return;
 	}
@@ -115,13 +121,42 @@ void display_setting_item (int item)
 			v = instant_dock;
 			break;
 
+		case 5:
+			v = control_scheme;
+			break;
+
+		case 6:
+			v = mouse_flight_mode;
+			break;
+
+		case 7:
+			v = invert_pitch;
+			break;
+
+		case 8:
+			v = mouse_sensitivity;
+			break;
+
+		case 9:
+			v = flight_assist;
+			break;
+
+		case 10:
+			if (gfx_is_window_fullscreen())
+				v = 2;
+			else if (gfx_is_window_maximized())
+				v = 1;
+			else
+				v = 0;
+			break;
+
 		default:
 			v = 0;
 			break;
 	}
 	
 	x = (item & 1) * 250 + 32; 
-	y = (item / 2) * 30 + 96;
+	y = (item / 2) * 28 + 80;
 	
 	gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
 	gfx_display_colour_text (x + 120, y, setting_list[item].value[v], GFX_COL_WHITE);
@@ -138,13 +173,13 @@ void highlight_setting (int item)
 		if (hilite_item == (NUM_SETTINGS - 1))
 		{
 			x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-			y = ((NUM_SETTINGS + 1) / 2) * 30 + 96 + 32;
+			y = 250;
 			width = OPTION_BAR_WIDTH;
 		}
 		else
 		{
 			x = (hilite_item & 1) * 250 + 32 + 120; 
-			y = (hilite_item / 2) * 30 + 96;
+			y = (hilite_item / 2) * 28 + 80;
 			width = 100;
 		}
 
@@ -155,13 +190,13 @@ void highlight_setting (int item)
 	if (item == (NUM_SETTINGS - 1))
 	{
 		x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-		y = ((NUM_SETTINGS + 1) / 2) * 30 + 96 + 32;
+		y = 250;
 		width = OPTION_BAR_WIDTH;
 	}
 	else
 	{
 		x = (item & 1) * 250 + 32 + 120; 
-		y = (item / 2) * 30 + 96;
+		y = (item / 2) * 28 + 80;
 		width = 100;
 	}
 	
@@ -174,13 +209,13 @@ void highlight_setting (int item)
 
 void select_left_setting (void)
 {
-	if ((hilite_item & 1) != 0)
+	if ((hilite_item & 1) != 0 && hilite_item < (NUM_SETTINGS - 1))
 		highlight_setting (hilite_item - 1);
 }
 
 void select_right_setting (void)
 {
-	if (((hilite_item & 1) == 0) && (hilite_item < (NUM_SETTINGS - 1)))
+	if (((hilite_item & 1) == 0) && (hilite_item < (NUM_SETTINGS - 2)))
 		highlight_setting (hilite_item + 1);
 }
 
@@ -200,7 +235,7 @@ void select_up_setting (void)
 
 void select_down_setting (void)
 {
-	if (hilite_item == (NUM_SETTINGS - 2))
+	if (hilite_item >= (NUM_SETTINGS - 3))
 	{
 		highlight_setting (NUM_SETTINGS - 1);
 		return;
@@ -239,6 +274,52 @@ void toggle_setting (void)
 
 		case 4:
 			instant_dock ^= 1;
+			break;
+
+		case 5:
+			control_scheme ^= 1;
+			break;
+
+		case 6:
+			mouse_flight_mode = (mouse_flight_mode + 1) % 3;
+			break;
+
+		case 7:
+			invert_pitch ^= 1;
+			break;
+
+		case 8:
+			mouse_sensitivity = (mouse_sensitivity + 1) % 3;
+			break;
+
+		case 9:
+			flight_assist ^= 1;
+			break;
+
+		case 10:
+			{
+				int win_mode = (gfx_is_window_fullscreen() ? 2 : (gfx_is_window_maximized() ? 1 : 0));
+				win_mode = (win_mode + 1) % 3;
+				if (win_mode == 0)
+				{
+					if (gfx_is_window_fullscreen())
+						gfx_toggle_fullscreen();
+					if (gfx_is_window_maximized())
+						gfx_toggle_maximize();
+				}
+				else if (win_mode == 1)
+				{
+					if (gfx_is_window_fullscreen())
+						gfx_toggle_fullscreen();
+					if (!gfx_is_window_maximized())
+						gfx_toggle_maximize();
+				}
+				else if (win_mode == 2)
+				{
+					if (!gfx_is_window_fullscreen())
+						gfx_toggle_fullscreen();
+				}
+			}
 			break;
 	}
 

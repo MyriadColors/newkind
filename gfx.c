@@ -107,11 +107,15 @@ int gfx_graphics_startup(void)
 	ClearBackground(BLACK);
 	render_target_active = true;
 
+	DisableCursor();
+
 	return 0;
 }
 
 void gfx_graphics_shutdown(void)
 {
+	EnableCursor();
+
 	if (scissor_active)
 	{
 		EndScissorMode();
@@ -587,4 +591,32 @@ int gfx_request_file(char *title, char *path, char *ext)
 	}
 
 	return 0;
+}
+
+void gfx_toggle_maximize (void)
+{
+	if (IsWindowFullscreen())
+	{
+		ToggleFullscreen();
+	}
+
+	if (IsWindowMaximized())
+		RestoreWindow();
+	else
+		MaximizeWindow();
+}
+
+void gfx_toggle_fullscreen (void)
+{
+	ToggleFullscreen();
+}
+
+int gfx_is_window_maximized (void)
+{
+	return IsWindowMaximized() ? 1 : 0;
+}
+
+int gfx_is_window_fullscreen (void)
+{
+	return IsWindowFullscreen() ? 1 : 0;
 }

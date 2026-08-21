@@ -72,6 +72,8 @@ void increase_flight_roll (void);
 void decrease_flight_roll (void);
 void increase_flight_climb (void);
 void decrease_flight_climb (void);
+void increase_flight_yaw (void);
+void decrease_flight_yaw (void);
 void dock_player (void);
 
 void damage_ship (int damage, int front);

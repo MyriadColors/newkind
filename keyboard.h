@@ -58,6 +58,31 @@ extern int kbd_enter_pressed;
 extern int kbd_backspace_pressed;
 extern int kbd_space_pressed;
 
+extern int kbd_w_down;
+extern int kbd_s_down;
+extern int kbd_a_down;
+extern int kbd_d_down;
+extern int kbd_q_down;
+extern int kbd_e_down;
+extern int kbd_up_down;
+extern int kbd_down_down;
+extern int kbd_left_down;
+extern int kbd_right_down;
+extern int kbd_q_pressed;
+extern int kbd_shift_down;
+extern int kbd_lctrl_down;
+extern int kbd_z_pressed;
+
+extern int mouse_dx;
+extern int mouse_dy;
+extern int mouse_x;
+extern int mouse_y;
+extern float mouse_wheel_delta;
+extern int mouse_left_down;
+extern int mouse_left_pressed;
+extern int mouse_right_pressed;
+extern int mouse_middle_pressed;
+
 
 int kbd_keyboard_startup (void);
 int kbd_keyboard_shutdown (void);

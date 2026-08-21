@@ -145,12 +145,22 @@ extern int compass_centre_y;
 
 extern int planet_render_style;
 
+extern int control_scheme;
+extern int mouse_flight_mode;
+extern int invert_pitch;
+extern int mouse_sensitivity;
+extern int flight_assist;
+
 extern int game_over;
 extern int docked;
 extern int finish;
 extern int flight_speed;
 extern int flight_roll;
 extern int flight_climb;
+extern int flight_yaw;
+extern double flight_roll_f;
+extern double flight_climb_f;
+extern double flight_yaw_f;
 extern int front_shield;
 extern int aft_shield;
 extern int energy;

@@ -3,3 +3,6 @@ newkind
 newkind-raylib
 newkind.exe
 *.log
+*.png
+*.bmp
+*.nkc

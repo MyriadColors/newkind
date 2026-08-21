@@ -50,6 +50,7 @@ int message_count;
 char message_string[80];
 int rolling;
 int climbing;
+int yawing;
 int game_paused;
 int have_joystick;
 
@@ -69,6 +70,7 @@ void initialise_game(void)
 	flight_speed = 1;
 	flight_roll = 0;
 	flight_climb = 0;
+	flight_yaw = 0;
 	docked = 1;
 	front_shield = 255;
 	aft_shield = 255;
@@ -214,6 +216,12 @@ void draw_laser_sights(void)
 		gfx_draw_colour_line (x1, y1-1, x2, y1-1, GFX_COL_GREY_1); 
 		gfx_draw_colour_line (x1, y1, x2, y1, GFX_COL_WHITE);
 		gfx_draw_colour_line (x1, y1+1, x2, y1+1, GFX_COL_GREY_1); 
+	}
+
+	if (control_scheme == 1 && mouse_flight_mode == 1 && mouse_y < 380)
+	{
+		gfx_draw_colour_line (mouse_x - 4, mouse_y, mouse_x + 4, mouse_y, GFX_COL_CYAN);
+		gfx_draw_colour_line (mouse_x, mouse_y - 4, mouse_x, mouse_y + 4, GFX_COL_CYAN);
 	}
 }
 
@@ -681,9 +689,237 @@ void handle_flight_keys (void)
 		}
 	}
 
+	if (kbd_F12_pressed)
+	{
+		gfx_toggle_maximize();
+	}
+
+	int is_flight_view = (!docked) && ((current_screen == SCR_FRONT_VIEW) ||
+	                                   (current_screen == SCR_REAR_VIEW) ||
+	                                   (current_screen == SCR_LEFT_VIEW) ||
+	                                   (current_screen == SCR_RIGHT_VIEW));
+
+	if (is_flight_view)
+	{
+		/* Missile Controls */
+		if (kbd_target_missile_pressed)
+			arm_missile();
+
+		if (kbd_fire_missile_pressed)
+			fire_missile();
+
+		if (kbd_unarm_missile_pressed)
+			unarm_missile();
+
+		/* Classic Flight Control Scheme */
+		if (control_scheme == 0)
+		{
+			/* Classic Roll: Comma / Period / Left / Right Arrow */
+			if (IsKeyDown(KEY_COMMA) || IsKeyDown(KEY_LEFT))
+			{
+				if (flight_roll < 0)
+					flight_roll_f = 0.0;
+				else
+					increase_flight_roll();
+				rolling = 1;
+			}
+
+			if (IsKeyDown(KEY_PERIOD) || IsKeyDown(KEY_RIGHT))
+			{
+				if (flight_roll > 0)
+					flight_roll_f = 0.0;
+				else
+					decrease_flight_roll();
+				rolling = 1;
+			}
+
+			/* Classic Pitch: S (Climb) / X (Dive) / Up / Down Arrow */
+			if (IsKeyDown(KEY_S) || IsKeyDown(KEY_UP))
+			{
+				if (flight_climb < 0)
+					flight_climb_f = 0.0;
+				else
+					increase_flight_climb();
+				climbing = 1;
+			}
+
+			if (IsKeyDown(KEY_X) || IsKeyDown(KEY_DOWN))
+			{
+				if (flight_climb > 0)
+					flight_climb_f = 0.0;
+				else
+					decrease_flight_climb();
+				climbing = 1;
+			}
+		}
+		/* Modern Flight Control Scheme */
+		else if (control_scheme == 1)
+		{
+			/* Mouse Actions (only when Mouse Flight is not Off) */
+			if (mouse_flight_mode != 2)
+			{
+				if (mouse_left_down && draw_lasers == 0)
+				{
+					draw_lasers = fire_laser();
+				}
+
+				if (mouse_right_pressed)
+				{
+					if (missile_target == MISSILE_UNARMED)
+						arm_missile();
+					else if (missile_target >= 0)
+						fire_missile();
+					else
+						unarm_missile();
+				}
+
+				if (mouse_middle_pressed)
+				{
+					if (cmdr.ecm)
+						activate_ecm(1);
+					else
+						jump_warp();
+				}
+
+				/* Mouse Wheel Throttle */
+				if (mouse_wheel_delta > 0.05f)
+				{
+					flight_speed += (int)(mouse_wheel_delta * 2.0f + 0.5f);
+					if (flight_speed > myship.max_speed)
+						flight_speed = myship.max_speed;
+				}
+				else if (mouse_wheel_delta < -0.05f)
+				{
+					flight_speed += (int)(mouse_wheel_delta * 2.0f - 0.5f);
+					if (flight_speed < 1)
+						flight_speed = 1;
+				}
+
+				/* Mouse Flight Steering */
+				double sens = (mouse_sensitivity == 0) ? 0.40 : (mouse_sensitivity == 1) ? 0.75 : 1.25;
+
+				if (mouse_flight_mode == 0) /* Direct Delta */
+				{
+					if (mouse_dx != 0 || mouse_dy != 0)
+					{
+						if (mouse_dx != 0)
+						{
+							double m_dx = (double)mouse_dx;
+							double sign_x = (m_dx > 0.0) ? 1.0 : -1.0;
+							double yaw_cmd = sign_x * pow(fabs(m_dx), 1.18) * sens * 1.5;
+							flight_yaw_f += yaw_cmd;
+							if (flight_yaw_f > myship.max_roll) flight_yaw_f = myship.max_roll;
+							if (flight_yaw_f < -myship.max_roll) flight_yaw_f = -myship.max_roll;
+							flight_yaw = (int)round(flight_yaw_f);
+							yawing = 1;
+						}
+
+						if (mouse_dy != 0)
+						{
+							double m_dy = (double)mouse_dy;
+							double sign_y = (m_dy > 0.0) ? 1.0 : -1.0;
+							double p_dir = (invert_pitch == 0) ? 1.0 : -1.0;
+							double pitch_cmd = p_dir * sign_y * pow(fabs(m_dy), 1.18) * sens * 1.5;
+							flight_climb_f += pitch_cmd;
+							if (flight_climb_f > myship.max_climb) flight_climb_f = myship.max_climb;
+							if (flight_climb_f < -myship.max_climb) flight_climb_f = -myship.max_climb;
+							flight_climb = (int)round(flight_climb_f);
+							climbing = 1;
+						}
+					}
+				}
+				else if (mouse_flight_mode == 1) /* Virtual Joystick */
+				{
+					int dx = mouse_x - 256;
+					int dy = mouse_y - 192;
+
+					if (abs(dx) > 12)
+					{
+						double eff_dx = (dx > 0) ? (dx - 12) : (dx + 12);
+						double sign_x = (eff_dx > 0.0) ? 1.0 : -1.0;
+						double target_yaw = sign_x * pow(fabs(eff_dx) / 120.0, 1.2) * myship.max_roll * sens * 1.3;
+						if (target_yaw > myship.max_roll) target_yaw = myship.max_roll;
+						if (target_yaw < -myship.max_roll) target_yaw = -myship.max_roll;
+
+						flight_yaw_f += (target_yaw - flight_yaw_f) * 0.35;
+						flight_yaw = (int)round(flight_yaw_f);
+						yawing = 1;
+					}
+
+					if (abs(dy) > 12)
+					{
+						double eff_dy = (dy > 0) ? (dy - 12) : (dy + 12);
+						double sign_y = (eff_dy > 0.0) ? 1.0 : -1.0;
+						double p_dir = (invert_pitch == 0) ? 1.0 : -1.0;
+						double target_climb = p_dir * sign_y * pow(fabs(eff_dy) / 100.0, 1.2) * myship.max_climb * sens * 1.3;
+						if (target_climb > myship.max_climb) target_climb = myship.max_climb;
+						if (target_climb < -myship.max_climb) target_climb = -myship.max_climb;
+
+						flight_climb_f += (target_climb - flight_climb_f) * 0.35;
+						flight_climb = (int)round(flight_climb_f);
+						climbing = 1;
+					}
+				}
+			}
+
+			/* Modern Keyboard Flight */
+			if (kbd_left_down)
+			{
+				flight_yaw_f -= (myship.max_roll * 0.35);
+				if (flight_yaw_f < -myship.max_roll) flight_yaw_f = -myship.max_roll;
+				flight_yaw = (int)round(flight_yaw_f);
+				yawing = 1;
+			}
+
+			if (kbd_right_down)
+			{
+				flight_yaw_f += (myship.max_roll * 0.35);
+				if (flight_yaw_f > myship.max_roll) flight_yaw_f = myship.max_roll;
+				flight_yaw = (int)round(flight_yaw_f);
+				yawing = 1;
+			}
+
+			if (kbd_q_down)
+			{
+				flight_roll_f += (myship.max_roll * 0.35);
+				if (flight_roll_f > myship.max_roll) flight_roll_f = myship.max_roll;
+				flight_roll = (int)round(flight_roll_f);
+				rolling = 1;
+			}
+
+			if (kbd_e_down)
+			{
+				flight_roll_f -= (myship.max_roll * 0.35);
+				if (flight_roll_f < -myship.max_roll) flight_roll_f = -myship.max_roll;
+				flight_roll = (int)round(flight_roll_f);
+				rolling = 1;
+			}
+
+			if (kbd_up_down)
+			{
+				double p_step = (invert_pitch == 0 ? -1.0 : 1.0) * (myship.max_climb * 0.35);
+				flight_climb_f += p_step;
+				if (flight_climb_f > myship.max_climb) flight_climb_f = myship.max_climb;
+				if (flight_climb_f < -myship.max_climb) flight_climb_f = -myship.max_climb;
+				flight_climb = (int)round(flight_climb_f);
+				climbing = 1;
+			}
+
+			if (kbd_down_down)
+			{
+				double p_step = (invert_pitch == 0 ? 1.0 : -1.0) * (myship.max_climb * 0.35);
+				flight_climb_f += p_step;
+				if (flight_climb_f > myship.max_climb) flight_climb_f = myship.max_climb;
+				if (flight_climb_f < -myship.max_climb) flight_climb_f = -myship.max_climb;
+				flight_climb = (int)round(flight_climb_f);
+				climbing = 1;
+			}
+		}
+	}
+
 	if (kbd_fire_pressed)
 	{
-		if (!docked)
+		if (!docked && is_flight_view)
 		{
 			if (draw_lasers == 0)
 			{
@@ -694,7 +930,7 @@ void handle_flight_keys (void)
 
 	if (kbd_inc_speed_pressed)
 	{
-		if (!docked)
+		if (!docked && is_flight_view)
 		{
 			if (flight_speed < myship.max_speed)
 				flight_speed++;
@@ -703,24 +939,27 @@ void handle_flight_keys (void)
 
 	if (kbd_dec_speed_pressed)
 	{
-		if (!docked)
+		if (!docked && is_flight_view)
 		{
 			if (flight_speed > 1)
 				flight_speed--;
 		}
 	}
 
-	if (kbd_up_pressed)
-		arrow_up();
+	if (!is_flight_view)
+	{
+		if (kbd_up_pressed)
+			arrow_up();
 
-	if (kbd_down_pressed)
-		arrow_down();
+		if (kbd_down_pressed)
+			arrow_down();
 
-	if (kbd_left_pressed)
-		arrow_left();
+		if (kbd_left_pressed)
+			arrow_left();
 
-	if (kbd_right_pressed)
-		arrow_right();
+		if (kbd_right_pressed)
+			arrow_right();
+	}
 
 	if (kbd_enter_pressed)
 		return_pressed();
@@ -1052,6 +1291,7 @@ int main(void)
 
 			rolling = 0;
 			climbing = 0;
+			yawing = 0;
 
 			handle_flight_keys ();
 
@@ -1070,22 +1310,57 @@ int main(void)
 			if (message_count > 0)
 				message_count--;
 
-			if (!rolling)
+			if (flight_assist)
 			{
-				if (flight_roll > 0)
-					decrease_flight_roll();
-			
-				if (flight_roll < 0)
-					increase_flight_roll();
+				if (!rolling)
+				{
+					flight_roll_f *= 0.45;
+					if (fabs(flight_roll_f) < 0.1)
+						flight_roll_f = 0.0;
+					flight_roll = (int)round(flight_roll_f);
+				}
+
+				if (!climbing)
+				{
+					flight_climb_f *= 0.45;
+					if (fabs(flight_climb_f) < 0.1)
+						flight_climb_f = 0.0;
+					flight_climb = (int)round(flight_climb_f);
+				}
+
+				if (!yawing)
+				{
+					flight_yaw_f *= 0.45;
+					if (fabs(flight_yaw_f) < 0.1)
+						flight_yaw_f = 0.0;
+					flight_yaw = (int)round(flight_yaw_f);
+				}
 			}
-
-			if (!climbing)
+			else
 			{
-				if (flight_climb > 0)
-					decrease_flight_climb();
+				if (!rolling)
+				{
+					if (flight_roll_f > 0) flight_roll_f -= 1.0;
+					if (flight_roll_f < 0) flight_roll_f += 1.0;
+					if (fabs(flight_roll_f) < 1.0) flight_roll_f = 0.0;
+					flight_roll = (int)round(flight_roll_f);
+				}
 
-				if (flight_climb < 0)
-					increase_flight_climb();
+				if (!climbing)
+				{
+					if (flight_climb_f > 0) flight_climb_f -= 1.0;
+					if (flight_climb_f < 0) flight_climb_f += 1.0;
+					if (fabs(flight_climb_f) < 1.0) flight_climb_f = 0.0;
+					flight_climb = (int)round(flight_climb_f);
+				}
+
+				if (!yawing)
+				{
+					if (flight_yaw_f > 0) flight_yaw_f -= 1.0;
+					if (flight_yaw_f < 0) flight_yaw_f += 1.0;
+					if (fabs(flight_yaw_f) < 1.0) flight_yaw_f = 0.0;
+					flight_yaw = (int)round(flight_yaw_f);
+				}
 			}
 
 			if (!docked)

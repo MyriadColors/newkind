@@ -23,6 +23,10 @@
 #include "random.h"
 
 int warp_stars;
+extern int flight_yaw;
+extern double flight_roll_f;
+extern double flight_climb_f;
+extern double flight_yaw_f;
 
 struct star
 {
@@ -67,10 +71,8 @@ void front_starfield (void)
 	nstars = witchspace ? 3 : 12;
 
 	delta = warp_stars ? 50 : flight_speed;	
-	alpha = (double)flight_roll;
-	beta = (double)flight_climb;
-
-	alpha /= 256.0;
+	alpha = flight_roll_f / 256.0;
+	beta = flight_climb_f;
 	delta /= 2.0;
 	
 	for (i = 0; i < nstars; i++)
@@ -116,11 +118,8 @@ void front_starfield (void)
 		yy = yy + (xx * alpha);
 		xx = xx - (yy * alpha);
 
-/*
-		tx = yy * beta;
-		xx = xx + (tx * tx * 2);
-*/
 		yy = yy + beta;
+		xx = xx - flight_yaw_f;
 
 		stars[i].y = yy;
 		stars[i].x = xx;
@@ -163,10 +162,8 @@ void rear_starfield (void)
 	nstars = witchspace ? 3 : 12;
 
 	delta = warp_stars ? 50 : flight_speed;	
-	alpha = -flight_roll;
-	beta = -flight_climb;
-
-	alpha /= 256.0;
+	alpha = -flight_roll_f / 256.0;
+	beta = -flight_climb_f;
 	delta /= 2.0;
 	
 	for (i = 0; i < nstars; i++)
@@ -212,11 +209,8 @@ void rear_starfield (void)
 		yy = yy + (xx * alpha);
 		xx = xx - (yy * alpha);
 
-/*
-		tx = yy * beta;
-		xx = xx + (tx * tx * 2);
-*/
 		yy = yy + beta;
+		xx = xx + flight_yaw_f;
 		
 		if (warp_stars)
 		{

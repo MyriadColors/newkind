@@ -152,4 +152,9 @@ void gfx_finish_render (void);
 int gfx_request_file (char *title, char *path, char *ext);
 void xor_mode (int mode);
 
+void gfx_toggle_maximize (void);
+void gfx_toggle_fullscreen (void);
+int gfx_is_window_maximized (void);
+int gfx_is_window_fullscreen (void);
+
 #endif

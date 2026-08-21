@@ -48,12 +48,22 @@ int compass_centre_y;
 
 int planet_render_style = 0;
 
+int control_scheme = 1;      /* 0 = Classic, 1 = Modern */
+int mouse_flight_mode = 0;   /* 0 = Direct, 1 = Virtual Stick, 2 = Off */
+int invert_pitch = 0;        /* 0 = Normal, 1 = Inverted */
+int mouse_sensitivity = 1;   /* 0 = Low, 1 = Medium, 2 = High */
+int flight_assist = 1;       /* 0 = Off, 1 = On */
+
 int game_over;
 int docked;
 int finish;
 int flight_speed;
 int flight_roll;
 int flight_climb;
+int flight_yaw = 0;
+double flight_roll_f = 0.0;
+double flight_climb_f = 0.0;
+double flight_yaw_f = 0.0;
 int front_shield;
 int aft_shield;
 int energy;

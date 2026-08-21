@@ -44,6 +44,16 @@ void write_config_file (void)
 	fprintf (fp, "%d\t\t# Planet Descriptions: 0 = Tree Grubs, 1 = Hoopy Casinos\n", hoopy_casinos);
 
 	fprintf (fp, "%d\t\t# Instant dock: 0 = off, 1 = on\n", instant_dock);
+
+	fprintf (fp, "%d\t\t# Controls: 0 = Classic, 1 = Modern\n", control_scheme);
+
+	fprintf (fp, "%d\t\t# Mouse flight mode: 0 = Direct, 1 = Virtual Stick, 2 = Off\n", mouse_flight_mode);
+
+	fprintf (fp, "%d\t\t# Pitch mode: 0 = Standard, 1 = Inverted\n", invert_pitch);
+
+	fprintf (fp, "%d\t\t# Mouse sensitivity: 0 = Low, 1 = Medium, 2 = High\n", mouse_sensitivity);
+
+	fprintf (fp, "%d\t\t# Flight assist: 0 = Off, 1 = On\n", flight_assist);
 	
 	fprintf (fp, "newscan.cfg\t# Name of scanner config file to use.\n");
 
@@ -56,13 +66,14 @@ void write_config_file (void)
  * Ignore blanks, comments and strip white space.
  */
 
-void read_cfg_line (char *str, int max_size, FILE *fp)
+int read_cfg_line (char *str, int max_size, FILE *fp)
 {
 	char *s;
 
 	do
 	{	
-		fgets (str, max_size, fp);
+		if (fgets (str, max_size, fp) == NULL)
+			return -1;
 
 		for (s = str; *s; s++)					/* End of line at LF or # */
 		{
@@ -76,7 +87,7 @@ void read_cfg_line (char *str, int max_size, FILE *fp)
 		if (s != str)							/* Trim any trailing white space */
 		{
 			s--;
-			while (isspace(*s))
+			while (isspace((unsigned char)*s))
 			{
 				*s = '\0';
 				if (s == str)
@@ -86,6 +97,8 @@ void read_cfg_line (char *str, int max_size, FILE *fp)
 		}
 
 	} while (*str == '\0');
+
+	return 0;
 }
 
 
@@ -102,16 +115,20 @@ void read_scanner_config_file (char *filename)
 	if (fp == NULL)
 		return;
 
-	read_cfg_line (str, sizeof(str), fp);
-	strcpy (scanner_filename, str);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		strcpy (scanner_filename, str);
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d,%d", &scanner_cx, &scanner_cy);
-	scanner_cy += 385;
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+	{
+		sscanf (str, "%d,%d", &scanner_cx, &scanner_cy);
+		scanner_cy += 385;
+	}
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d,%d", &compass_centre_x, &compass_centre_y);
-	compass_centre_y += 385;
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+	{
+		sscanf (str, "%d,%d", &compass_centre_x, &compass_centre_y);
+		compass_centre_y += 385;
+	}
 	
 	fclose (fp);
 }
@@ -124,31 +141,47 @@ void read_config_file (void)
 {
 	FILE *fp;
 	char str[256];
+	int extra_idx = 0;
 	
 	fp = fopen ("newkind.cfg", "r");
 	if (fp == NULL)
 		return;
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &speed_cap);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &speed_cap);
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &wireframe);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &wireframe);
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &anti_alias_gfx);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &anti_alias_gfx);
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &planet_render_style);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &planet_render_style);
 	
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &hoopy_casinos);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &hoopy_casinos);
 
-	read_cfg_line (str, sizeof(str), fp);
-	sscanf (str, "%d", &instant_dock);
+	if (read_cfg_line (str, sizeof(str), fp) == 0)
+		sscanf (str, "%d", &instant_dock);
 
-	read_cfg_line (str, sizeof(str), fp);
-	read_scanner_config_file (str);
+	while (read_cfg_line (str, sizeof(str), fp) == 0)
+	{
+		if (strstr(str, ".cfg") != NULL)
+		{
+			read_scanner_config_file (str);
+			break;
+		}
+		else
+		{
+			if (extra_idx == 0) sscanf (str, "%d", &control_scheme);
+			else if (extra_idx == 1) sscanf (str, "%d", &mouse_flight_mode);
+			else if (extra_idx == 2) sscanf (str, "%d", &invert_pitch);
+			else if (extra_idx == 3) sscanf (str, "%d", &mouse_sensitivity);
+			else if (extra_idx == 4) sscanf (str, "%d", &flight_assist);
+			extra_idx++;
+		}
+	}
 		
 	fclose (fp);
 }
