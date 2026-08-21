@@ -150,6 +150,9 @@ extern int mouse_flight_mode;
 extern int invert_pitch;
 extern int mouse_sensitivity;
 extern int flight_assist;
+extern int aspect_ratio_mode;
+extern int scaling_filter;
+extern int display_mode;
 
 extern int game_over;
 extern int docked;

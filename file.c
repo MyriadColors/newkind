@@ -56,6 +56,12 @@ void write_config_file (void)
 
 	fprintf (fp, "%d\t\t# Flight assist: 0 = Off, 1 = On\n", flight_assist);
 	
+	fprintf (fp, "%d\t\t# Aspect ratio: 0 = 1:1, 1 = 4:3, 2 = 16:9, 3 = Integer, 4 = Stretch\n", aspect_ratio_mode);
+
+	fprintf (fp, "%d\t\t# Texture filter: 0 = Point (Crisp), 1 = Bilinear (Smooth)\n", scaling_filter);
+
+	fprintf (fp, "%d\t\t# Display mode: 0 = Maximized, 1 = Fullscreen, 2 = 800x600, 3 = 1024x768, 4 = 1280x720, 5 = 1920x1080\n", display_mode);
+
 	fprintf (fp, "newscan.cfg\t# Name of scanner config file to use.\n");
 
 	fclose (fp);
@@ -180,6 +186,9 @@ void read_config_file (void)
 			else if (extra_idx == 2) sscanf (str, "%d", &invert_pitch);
 			else if (extra_idx == 3) sscanf (str, "%d", &mouse_sensitivity);
 			else if (extra_idx == 4) sscanf (str, "%d", &flight_assist);
+			else if (extra_idx == 5) sscanf (str, "%d", &aspect_ratio_mode);
+			else if (extra_idx == 6) sscanf (str, "%d", &scaling_filter);
+			else if (extra_idx == 7) sscanf (str, "%d", &display_mode);
 			extra_idx++;
 		}
 	}

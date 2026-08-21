@@ -6,10 +6,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "raylib.h"
 #include "keyboard.h"
 #include "elite.h"
+#include "gfx.h"
 
 int kbd_F1_pressed = 0;
 int kbd_F2_pressed = 0;
@@ -229,18 +231,21 @@ void kbd_poll_keyboard(void)
 			EnableCursor();
 	}
 
-	float scale = (float)GetScreenWidth() / 512.0f;
-	float scale_y = (float)GetScreenHeight() / 512.0f;
-	if (scale_y < scale) scale = scale_y;
-	if (scale > 0.001f)
+	int vp_x = 0, vp_y = 0, vp_w = 512, vp_h = 512;
+	gfx_get_viewport(&vp_x, &vp_y, &vp_w, &vp_h);
+
+	if (vp_w > 0 && vp_h > 0)
 	{
-		int render_w = (int)(512.0f * scale);
-		int render_h = (int)(512.0f * scale);
-		int offset_x = (GetScreenWidth() - render_w) / 2;
-		int offset_y = (GetScreenHeight() - render_h) / 2;
 		Vector2 mpos = GetMousePosition();
-		mouse_x = (int)((mpos.x - offset_x) / scale);
-		mouse_y = (int)((mpos.y - offset_y) / scale);
+		float norm_x = (mpos.x - (float)vp_x) * (512.0f / (float)vp_w);
+		float norm_y = (mpos.y - (float)vp_y) * (512.0f / (float)vp_h);
+		mouse_x = (int)roundf(norm_x);
+		mouse_y = (int)roundf(norm_y);
+
+		if (mouse_x < 0) mouse_x = 0;
+		if (mouse_x > 511) mouse_x = 511;
+		if (mouse_y < 0) mouse_y = 0;
+		if (mouse_y > 511) mouse_y = 511;
 	}
 	else
 	{

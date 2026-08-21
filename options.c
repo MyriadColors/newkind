@@ -30,7 +30,7 @@
 static int hilite_item;
  
 #define NUM_OPTIONS 4
-#define NUM_SETTINGS 12
+#define NUM_SETTINGS 14
 
 #define OPTION_BAR_WIDTH	(400)
 #define OPTION_BAR_HEIGHT	(15)
@@ -52,23 +52,25 @@ static struct option option_list[NUM_OPTIONS] =
 struct setting
 {
 	char *name;
-	char *value[5];
+	char *value[6];
 };
 
 static struct setting setting_list[NUM_SETTINGS] =
 {
-	{"Graphics:",		{"Solid", "Wireframe", "", "", ""}},
-	{"Anti Alias:",		{"Off", "On", "", "", ""}},		
-	{"Planet Style:",	{"Wireframe", "Green", "SNES", "Fractal", ""}},
-	{"Planet Desc.:",	{"BBC", "MSX", "", "", ""}},
-	{"Instant Dock:",	{"Off", "On", "", "", ""}},	
-	{"Controls:",		{"Classic", "Modern", "", "", ""}},
-	{"Mouse Flight:",	{"Direct", "Virtual", "Off", "", ""}},
-	{"Pitch Mode:",		{"Standard", "Inverted", "", "", ""}},
-	{"Mouse Sens:",		{"Low", "Medium", "High", "", ""}},
-	{"Flight Assist:",	{"Off", "On", "", "", ""}},
-	{"Window Size:",	{"Windowed", "Maximized", "Fullscreen", "", ""}},
-	{"Save Settings",	{"", "", "", "", ""}}
+	{"Graphics:",		{"Solid", "Wireframe", "", "", "", ""}},
+	{"Anti Alias:",		{"Off", "On", "", "", "", ""}},		
+	{"Planet Style:",	{"Wireframe", "Green", "SNES", "Fractal", "", ""}},
+	{"Planet Desc.:",	{"BBC", "MSX", "", "", "", ""}},
+	{"Instant Dock:",	{"Off", "On", "", "", "", ""}},	
+	{"Controls:",		{"Classic", "Modern", "", "", "", ""}},
+	{"Mouse Flight:",	{"Direct", "Virtual", "Off", "", "", ""}},
+	{"Pitch Mode:",		{"Standard", "Inverted", "", "", "", ""}},
+	{"Mouse Sens:",		{"Low", "Medium", "High", "", "", ""}},
+	{"Flight Assist:",	{"Off", "On", "", "", "", ""}},
+	{"Display Mode:",	{"Maximized", "Fullscreen", "800x600", "1024x768", "1280x720", "1920x1080"}},
+	{"Aspect Ratio:",	{"1:1 Square", "4:3 Retro", "16:9 Wide", "Integer", "Stretch", ""}},
+	{"Filter:",			{"Point", "Bilinear", "", "", "", ""}},
+	{"Save Settings",	{"", "", "", "", "", ""}}
 };
 
 
@@ -94,7 +96,7 @@ void display_setting_item (int item)
 
 	if (item == (NUM_SETTINGS - 1))
 	{
-		y = 250;
+		y = 265;
 		gfx_display_centre_text (y, setting_list[item].name, 120, GFX_COL_WHITE);
 		return;
 	}
@@ -142,12 +144,15 @@ void display_setting_item (int item)
 			break;
 
 		case 10:
-			if (gfx_is_window_fullscreen())
-				v = 2;
-			else if (gfx_is_window_maximized())
-				v = 1;
-			else
-				v = 0;
+			v = display_mode;
+			break;
+
+		case 11:
+			v = aspect_ratio_mode;
+			break;
+
+		case 12:
+			v = scaling_filter;
 			break;
 
 		default:
@@ -156,7 +161,7 @@ void display_setting_item (int item)
 	}
 	
 	x = (item & 1) * 250 + 32; 
-	y = (item / 2) * 28 + 80;
+	y = (item / 2) * 26 + 65;
 	
 	gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
 	gfx_display_colour_text (x + 120, y, setting_list[item].value[v], GFX_COL_WHITE);
@@ -173,13 +178,13 @@ void highlight_setting (int item)
 		if (hilite_item == (NUM_SETTINGS - 1))
 		{
 			x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-			y = 250;
+			y = 265;
 			width = OPTION_BAR_WIDTH;
 		}
 		else
 		{
 			x = (hilite_item & 1) * 250 + 32 + 120; 
-			y = (hilite_item / 2) * 28 + 80;
+			y = (hilite_item / 2) * 26 + 65;
 			width = 100;
 		}
 
@@ -190,13 +195,13 @@ void highlight_setting (int item)
 	if (item == (NUM_SETTINGS - 1))
 	{
 		x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-		y = 250;
+		y = 265;
 		width = OPTION_BAR_WIDTH;
 	}
 	else
 	{
 		x = (item & 1) * 250 + 32 + 120; 
-		y = (item / 2) * 28 + 80;
+		y = (item / 2) * 26 + 65;
 		width = 100;
 	}
 	
@@ -297,29 +302,16 @@ void toggle_setting (void)
 			break;
 
 		case 10:
-			{
-				int win_mode = (gfx_is_window_fullscreen() ? 2 : (gfx_is_window_maximized() ? 1 : 0));
-				win_mode = (win_mode + 1) % 3;
-				if (win_mode == 0)
-				{
-					if (gfx_is_window_fullscreen())
-						gfx_toggle_fullscreen();
-					if (gfx_is_window_maximized())
-						gfx_toggle_maximize();
-				}
-				else if (win_mode == 1)
-				{
-					if (gfx_is_window_fullscreen())
-						gfx_toggle_fullscreen();
-					if (!gfx_is_window_maximized())
-						gfx_toggle_maximize();
-				}
-				else if (win_mode == 2)
-				{
-					if (!gfx_is_window_fullscreen())
-						gfx_toggle_fullscreen();
-				}
-			}
+			display_mode = (display_mode + 1) % 6;
+			gfx_apply_display_mode(display_mode);
+			break;
+
+		case 11:
+			aspect_ratio_mode = (aspect_ratio_mode + 1) % 5;
+			break;
+
+		case 12:
+			scaling_filter = (scaling_filter + 1) % 2;
 			break;
 	}
 

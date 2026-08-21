@@ -26,8 +26,9 @@
 #ifndef GFX_H
 #define GFX_H
 
-#ifdef RES_512_512
-
+/*
+ * Internal logical coordinate space (512x512 virtual canvas)
+ */
 #define GFX_SCALE		(2)
 #define GFX_X_OFFSET	(0)
 #define GFX_Y_OFFSET	(0)
@@ -38,36 +39,6 @@
 #define GFX_VIEW_TY		1
 #define GFX_VIEW_BX		509
 #define GFX_VIEW_BY		381
-
-#elif defined(RES_800_600)
-
-#define GFX_SCALE		(2)
-#define GFX_X_OFFSET	(144)
-#define GFX_Y_OFFSET	(44)
-#define GFX_X_CENTRE	(256)
-#define GFX_Y_CENTRE	(192)
-
-#define GFX_VIEW_TX		1
-#define GFX_VIEW_TY		1
-#define GFX_VIEW_BX		509
-#define GFX_VIEW_BY		381
-
-#endif
-
-#ifndef GFX_SCALE
-
-#define GFX_SCALE		(1)
-#define GFX_X_OFFSET	(0)
-#define GFX_Y_OFFSET	(0)
-#define GFX_X_CENTRE	(128)
-#define GFX_Y_CENTRE	(96)
-
-#define GFX_VIEW_TX		1
-#define GFX_VIEW_TY		1
-#define GFX_VIEW_BX		253
-#define GFX_VIEW_BY		191
-
-#endif
  
 
 
@@ -156,5 +127,23 @@ void gfx_toggle_maximize (void);
 void gfx_toggle_fullscreen (void);
 int gfx_is_window_maximized (void);
 int gfx_is_window_fullscreen (void);
+void gfx_get_viewport (int *x, int *y, int *w, int *h);
+void gfx_apply_display_mode (int mode);
+
+#define DISPLAY_MODE_MAXIMIZED  0
+#define DISPLAY_MODE_FULLSCREEN 1
+#define DISPLAY_MODE_800_600    2
+#define DISPLAY_MODE_1024_768   3
+#define DISPLAY_MODE_1280_720   4
+#define DISPLAY_MODE_1920_1080  5
+
+#define ASPECT_RATIO_1_1      0
+#define ASPECT_RATIO_4_3      1
+#define ASPECT_RATIO_16_9     2
+#define ASPECT_RATIO_INTEGER  3
+#define ASPECT_RATIO_STRETCH  4
+
+#define FILTER_POINT          0
+#define FILTER_BILINEAR       1
 
 #endif

@@ -31,19 +31,5 @@
 
 #define GFX_RAYLIB
 
-/*
- * Set the screen resolution...
- * (if nothing is defined, assume 256x256).
- */
-
-#ifndef RES_512_512
-#define RES_512_512
-#endif
-
-#define RES_800_600
-#define RES_640_480
-#define RES_320_240
-
-
 #endif
 

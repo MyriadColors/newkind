@@ -88,8 +88,10 @@ int gfx_graphics_startup(void)
 	InitWindow(800, 600, "Elite - The New Kind (Raylib)");
 	SetTargetFPS(60);
 
+	gfx_apply_display_mode(display_mode);
+
 	target = LoadRenderTexture(512, 512);
-	SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
+	SetTextureFilter(target.texture, (scaling_filter == 1) ? TEXTURE_FILTER_BILINEAR : TEXTURE_FILTER_POINT);
 
 	if (FileExists("scanner.bmp"))
 	{
@@ -134,6 +136,19 @@ void gfx_graphics_shutdown(void)
 	CloseWindow();
 }
 
+static int vp_offset_x = 0;
+static int vp_offset_y = 0;
+static int vp_render_w = 512;
+static int vp_render_h = 512;
+
+void gfx_get_viewport(int *x, int *y, int *w, int *h)
+{
+	if (x) *x = vp_offset_x;
+	if (y) *y = vp_offset_y;
+	if (w) *w = vp_render_w;
+	if (h) *h = vp_render_h;
+}
+
 void gfx_update_screen(void)
 {
 	if (scissor_active)
@@ -148,17 +163,61 @@ void gfx_update_screen(void)
 		render_target_active = false;
 	}
 
+	/* Update texture filtering based on user setting */
+	SetTextureFilter(target.texture, (scaling_filter == 1) ? TEXTURE_FILTER_BILINEAR : TEXTURE_FILTER_POINT);
+
 	BeginDrawing();
 	ClearBackground(BLACK);
 
-	float scale = fminf((float)GetScreenWidth() / 512.0f, (float)GetScreenHeight() / 512.0f);
-	int render_w = (int)(512.0f * scale);
-	int render_h = (int)(512.0f * scale);
-	int offset_x = (GetScreenWidth() - render_w) / 2;
-	int offset_y = (GetScreenHeight() - render_h) / 2;
+	int screen_w = GetScreenWidth();
+	int screen_h = GetScreenHeight();
+
+	if (aspect_ratio_mode == ASPECT_RATIO_STRETCH)
+	{
+		vp_render_w = screen_w;
+		vp_render_h = screen_h;
+		vp_offset_x = 0;
+		vp_offset_y = 0;
+	}
+	else if (aspect_ratio_mode == ASPECT_RATIO_INTEGER)
+	{
+		int scale = (int)fminf((float)screen_w / 512.0f, (float)screen_h / 512.0f);
+		if (scale < 1) scale = 1;
+		vp_render_w = 512 * scale;
+		vp_render_h = 512 * scale;
+		vp_offset_x = (screen_w - vp_render_w) / 2;
+		vp_offset_y = (screen_h - vp_render_h) / 2;
+	}
+	else
+	{
+		float target_aspect = 1.0f;
+		if (aspect_ratio_mode == ASPECT_RATIO_4_3)
+			target_aspect = 4.0f / 3.0f;
+		else if (aspect_ratio_mode == ASPECT_RATIO_16_9)
+			target_aspect = 16.0f / 9.0f;
+		else /* ASPECT_RATIO_1_1 */
+			target_aspect = 1.0f;
+
+		float win_aspect = (float)screen_w / (float)screen_h;
+		if (win_aspect > target_aspect)
+		{
+			/* Pillarbox (bars on left/right) */
+			vp_render_h = screen_h;
+			vp_render_w = (int)roundf((float)screen_h * target_aspect);
+		}
+		else
+		{
+			/* Letterbox (bars on top/bottom) */
+			vp_render_w = screen_w;
+			vp_render_h = (int)roundf((float)screen_w / target_aspect);
+		}
+
+		vp_offset_x = (screen_w - vp_render_w) / 2;
+		vp_offset_y = (screen_h - vp_render_h) / 2;
+	}
 
 	Rectangle srcRec = { 0.0f, 0.0f, 512.0f, -512.0f };
-	Rectangle dstRec = { (float)offset_x, (float)offset_y, (float)render_w, (float)render_h };
+	Rectangle dstRec = { (float)vp_offset_x, (float)vp_offset_y, (float)vp_render_w, (float)vp_render_h };
 	Vector2 origin = { 0.0f, 0.0f };
 
 	DrawTexturePro(target.texture, srcRec, dstRec, origin, 0.0f, WHITE);
@@ -620,4 +679,69 @@ int gfx_is_window_maximized (void)
 int gfx_is_window_fullscreen (void)
 {
 	return IsWindowFullscreen() ? 1 : 0;
+}
+
+void gfx_apply_display_mode (int mode)
+{
+	int mon = GetCurrentMonitor();
+	int mon_w = GetMonitorWidth(mon);
+	int mon_h = GetMonitorHeight(mon);
+
+	switch (mode)
+	{
+		case DISPLAY_MODE_MAXIMIZED:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (!IsWindowMaximized())
+				MaximizeWindow();
+			break;
+
+		case DISPLAY_MODE_FULLSCREEN:
+			if (!IsWindowFullscreen())
+				ToggleFullscreen();
+			break;
+
+		case DISPLAY_MODE_800_600:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (IsWindowMaximized())
+				RestoreWindow();
+			SetWindowSize(800, 600);
+			SetWindowPosition((mon_w - 800) / 2, (mon_h - 600) / 2);
+			break;
+
+		case DISPLAY_MODE_1024_768:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (IsWindowMaximized())
+				RestoreWindow();
+			SetWindowSize(1024, 768);
+			SetWindowPosition((mon_w - 1024) / 2, (mon_h - 768) / 2);
+			break;
+
+		case DISPLAY_MODE_1280_720:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (IsWindowMaximized())
+				RestoreWindow();
+			SetWindowSize(1280, 720);
+			SetWindowPosition((mon_w - 1280) / 2, (mon_h - 720) / 2);
+			break;
+
+		case DISPLAY_MODE_1920_1080:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (IsWindowMaximized())
+				RestoreWindow();
+			SetWindowSize(1920, 1080);
+			SetWindowPosition((mon_w - 1920) / 2, (mon_h - 1080) / 2);
+			break;
+
+		default:
+			if (IsWindowFullscreen())
+				ToggleFullscreen();
+			if (!IsWindowMaximized())
+				MaximizeWindow();
+			break;
+	}
 }

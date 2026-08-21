@@ -53,6 +53,9 @@ int mouse_flight_mode = 0;   /* 0 = Direct, 1 = Virtual Stick, 2 = Off */
 int invert_pitch = 0;        /* 0 = Normal, 1 = Inverted */
 int mouse_sensitivity = 1;   /* 0 = Low, 1 = Medium, 2 = High */
 int flight_assist = 1;       /* 0 = Off, 1 = On */
+int aspect_ratio_mode = 0;   /* 0 = 1:1 Square, 1 = 4:3 Retro, 2 = 16:9 Wide, 3 = Integer, 4 = Stretch */
+int scaling_filter = 0;      /* 0 = Point (Crisp), 1 = Bilinear (Smooth) */
+int display_mode = 0;        /* 0 = Maximized, 1 = Fullscreen, 2 = 800x600, 3 = 1024x768, 4 = 1280x720, 5 = 1920x1080 */
 
 int game_over;
 int docked;

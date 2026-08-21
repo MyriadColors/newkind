@@ -4,7 +4,7 @@
 
 CC = gcc
 LIBS = `pkg-config --libs raylib` -lm
-CFLAGS = -O2 -Wall -Wextra -pedantic -DRES_512_512
+CFLAGS = -O2 -Wall -Wextra -pedantic
 
 OBJS = gfx.o main.o docked.o elite.o \
        intro.o planet.o shipdata.o shipface.o sound.o space.o \
