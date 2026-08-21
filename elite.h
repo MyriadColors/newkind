@@ -15,6 +15,9 @@
 #ifndef ELITE_H
 #define ELITE_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "planet.h"
 #include "trade.h"
 

@@ -117,7 +117,7 @@ struct player_ship myship;
 
 struct ship_data *ship_list[NO_OF_SHIPS + 1] =
 {
-	NULL,
+	nullptr,
 	&missile_data,
 	&coriolis_data,
 	&esccaps_data,

@@ -290,21 +290,21 @@ void gfx_draw_rectangle(int tx, int ty, int bx, int by, int col)
 	DrawRectangle(x, y, w, h, palette_to_color(col));
 }
 
-void gfx_display_text(int x, int y, char *txt)
+void gfx_display_text(int x, int y, const char *txt)
 {
 	int rx = x + GFX_X_OFFSET;
 	int ry = y + GFX_Y_OFFSET;
 	DrawText(txt, rx, ry, 12, WHITE);
 }
 
-void gfx_display_colour_text(int x, int y, char *txt, int col)
+void gfx_display_colour_text(int x, int y, const char *txt, int col)
 {
 	int rx = x + GFX_X_OFFSET;
 	int ry = y + GFX_Y_OFFSET;
 	DrawText(txt, rx, ry, 12, palette_to_color(col));
 }
 
-void gfx_display_centre_text(int y, char *str, int psize, int col)
+void gfx_display_centre_text(int y, const char *str, int psize, int col)
 {
 	(void)psize;
 	int font_size = 12;
@@ -348,11 +348,11 @@ void gfx_clear_area(int tx, int ty, int bx, int by)
 	DrawRectangle(x, y, w, h, BLACK);
 }
 
-void gfx_display_pretty_text(int tx, int ty, int bx, int by, char *txt)
+void gfx_display_pretty_text(int tx, int ty, int bx, int by, const char *txt)
 {
 	(void)by;
 	char strbuf[100];
-	char *str = txt;
+	const char *str = txt;
 	int len = strlen(txt);
 	int maxlen = (bx - tx) / 8;
 
@@ -580,7 +580,7 @@ void gfx_finish_render(void)
 	}
 }
 
-int gfx_request_file(char *title, char *path, char *ext)
+int gfx_request_file(const char *title, char *path, const char *ext)
 {
 	char input_buf[256];
 	strncpy(input_buf, path, sizeof(input_buf) - 1);
@@ -609,7 +609,7 @@ int gfx_request_file(char *title, char *path, char *ext)
 		{
 			if (len > 0)
 			{
-				if (ext != NULL && ext[0] != '\0' && !strstr(input_buf, "."))
+				if (ext != nullptr && ext[0] != '\0' && !strstr(input_buf, "."))
 				{
 					strcat(input_buf, ".");
 					strcat(input_buf, ext);

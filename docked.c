@@ -33,7 +33,7 @@
 
 
 
-char *economy_type[] = {"Rich Industrial",
+const char *economy_type[] = {"Rich Industrial",
 						"Average Industrial",
 						"Poor Industrial",
 						"Mainly Industrial",
@@ -42,7 +42,7 @@ char *economy_type[] = {"Rich Industrial",
 						"Average Agricultural",
 						"Poor Agricultural"};
 
-char *government_type[] = {	"Anarchy",
+const char *government_type[] = {	"Anarchy",
 							"Feudal",
 							"Multi-Government",
 							"Dictatorship",
@@ -222,7 +222,7 @@ void move_cursor_to_origin (void)
 }
 
 
-void find_planet_by_name (char *find_name)
+void find_planet_by_name (const char *find_name)
 {
     int i;
 	struct galaxy_seed glx;
@@ -574,7 +574,7 @@ void display_data_on_planet (void)
 {
     char planet_name[16];
 	char str[100];
-	char *description;
+	const char *description;
 	struct planet_data hyper_planet_data;
 
 	current_screen = SCR_PLANET_DATA;
@@ -623,12 +623,12 @@ void display_data_on_planet (void)
 struct rank
 {
 	int score;
-	char *title;
+	const char *title;
 };
 
 #define NO_OF_RANKS	9
 
-struct rank rating[NO_OF_RANKS] =
+const struct rank rating[NO_OF_RANKS] =
 {
 	{0x0000, "Harmless"},
 	{0x0008, "Mostly Harmless"},
@@ -641,11 +641,11 @@ struct rank rating[NO_OF_RANKS] =
 	{0x1900, "---- E L I T E ---"}
 };
 
-char *laser_name[5] = {"Pulse", "Beam", "Military", "Mining", "Custom"};
+const char *laser_name[5] = {"Pulse", "Beam", "Military", "Mining", "Custom"};
 
 
 
-char *laser_type (int strength)
+const char *laser_type (int strength)
 {
 	switch (strength)
 	{
@@ -673,7 +673,7 @@ char *laser_type (int strength)
 #define Y_INC			16
 
 
-static char *condition_txt[] =
+static const char *condition_txt[] =
 {
 	"Docked",
 	"Green",
@@ -1105,7 +1105,7 @@ struct equip_item
 	int show;
 	int level;
 	int price;
-	char *name;
+	const char *name;
 	int type;
 };
 

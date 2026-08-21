@@ -141,7 +141,7 @@ void move_univ_object (struct univ_object *obj)
 		{
 			obj->velocity += obj->acceleration;
 			obj->acceleration = 0;
-			if (obj->type > 0 && obj->type <= NO_OF_SHIPS && ship_list[obj->type] != NULL)
+			if (obj->type > 0 && obj->type <= NO_OF_SHIPS && ship_list[obj->type] != nullptr)
 			{
 				if (obj->velocity > ship_list[obj->type]->velocity)
 					obj->velocity = ship_list[obj->type]->velocity;
@@ -595,7 +595,7 @@ void update_universe (void)
 				if (type == SHIP_VIPER)
 					cmdr.legal_status |= 64;
 			
-				bounty = (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != NULL) ? ship_list[type]->bounty : 0;
+				bounty = (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != nullptr) ? ship_list[type]->bounty : 0;
 				
 				if ((bounty != 0) && (!witchspace))
 				{

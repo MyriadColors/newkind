@@ -669,7 +669,7 @@ struct ship_face dodec_face[]=
 
 struct ship_solid ship_solids[] =
 {
-	{ 0, NULL},
+	{ 0, nullptr},
 	{17, missile_face}, 
 	{15, coriolis_face},
 	{ 4, escape_face},

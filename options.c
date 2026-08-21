@@ -37,11 +37,11 @@ static int hilite_item;
 
 struct option
 {
-	char *text;
+	const char *text;
 	int docked_only;
 };
 
-static struct option option_list[NUM_OPTIONS] =
+static const struct option option_list[NUM_OPTIONS] =
 {
 	{"Save Commander",	1},
 	{"Load Commander",	1},
@@ -51,11 +51,11 @@ static struct option option_list[NUM_OPTIONS] =
 
 struct setting
 {
-	char *name;
-	char *value[6];
+	const char *name;
+	const char *value[6];
 };
 
-static struct setting setting_list[NUM_SETTINGS] =
+static const struct setting setting_list[NUM_SETTINGS] =
 {
 	{"Graphics:",		{"Solid", "Wireframe", "", "", "", ""}},
 	{"Anti Alias:",		{"Off", "On", "", "", "", ""}},		

@@ -41,24 +41,21 @@ struct random_seed
 
 static struct random_seed rnd_seed;
 
-static char *digrams="ABOUSEITILETSTONLONUTHNOALLEXEGEZACEBISOUSESARMAINDIREA?ERATENBERALAVETIEDORQUANTEISRION";
+static const char *digrams = "ABOUSEITILETSTONLONUTHNOALLEXEGEZACEBISOUSESARMAINDIREA?ERATENBERALAVETIEDORQUANTEISRION";
 
-static char *inhabitant_desc1[] = {"Large ", "Fierce ", "Small "};
+static const char *inhabitant_desc1[] = {"Large ", "Fierce ", "Small "};
 
-static char *inhabitant_desc2[] = {"Green ", "Red ", "Yellow ", "Blue ", "Black ", "Harmless "};
+static const char *inhabitant_desc2[] = {"Green ", "Red ", "Yellow ", "Blue ", "Black ", "Harmless "};
 
-static char *inhabitant_desc3[] = {"Slimy ", "Bug-Eyed ", "Horned ", "Bony ", "Fat ", "Furry "};
+static const char *inhabitant_desc3[] = {"Slimy ", "Bug-Eyed ", "Horned ", "Bony ", "Fat ", "Furry "};
 
-static char *inhabitant_desc4[] = {"Rodent", "Frog", "Lizard", "Lobster", "Bird", "Humanoid", "Feline", "Insect"};
+static const char *inhabitant_desc4[] = {"Rodent", "Frog", "Lizard", "Lobster", "Bird", "Humanoid", "Feline", "Insect"};
 
 
 static char planet_description[300];
 static char *desc_ptr;
 
-
-
-
-static char *desc_list[36][5] =
+static const char *desc_list[36][5] =
 {
 /*  0	*/	{"fabled", "notable", "well known", "famous", "noted"},
 /*  1	*/	{"very", "mildly", "most", "reasonably", ""},
@@ -273,11 +270,10 @@ int find_planet_number (struct galaxy_seed planet)
 
 void name_planet (char *gname, struct galaxy_seed glx)
 {
-    int size;
+	int size;
 	int i;
 	char *gp;
 	unsigned int x;
-
 
 	gp = gname;
 
@@ -307,17 +303,17 @@ void name_planet (char *gname, struct galaxy_seed glx)
 
 void capitalise_name (char *name)
 {
-    char *ptr = name;
+	char *ptr = name;
 
 	if (*ptr == '\0')
 		return;
 
-	*ptr = toupper(*ptr);
+	*ptr = toupper((unsigned char)*ptr);
 	ptr++;
 
 	while (*ptr != '\0')
 	{
-	    *ptr = tolower(*ptr);
+		*ptr = tolower((unsigned char)*ptr);
 		ptr++;
 	}
 }
@@ -356,7 +352,7 @@ void describe_inhabitants (char *str, struct galaxy_seed planet)
 
 
 
-void expand_description (char *source)
+void expand_description (const char *source)
 {
 	char str[32];
 	char *ptr;
@@ -371,8 +367,9 @@ void expand_description (char *source)
 		{
 			source++;
 			ptr = str;
-			while (*source != '>')
+			while (*source != '>') {
 				*ptr++ = *source++;
+			}
 			*ptr = '\0';
 			source++;
 			num = atoi(str);
@@ -445,14 +442,14 @@ void expand_description (char *source)
 
 
 
-char *describe_planet (struct galaxy_seed planet)
+const char *describe_planet (struct galaxy_seed planet)
 {
-	char *mission_text;
+	const char *mission_text;
 	
 	if (cmdr.mission == 1)
 	{
 		mission_text = mission_planet_desc (planet);
-		if (mission_text != NULL)
+		if (mission_text != nullptr)
 			return mission_text;
 	}
 	

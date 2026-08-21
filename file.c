@@ -31,7 +31,7 @@ void write_config_file (void)
 	FILE *fp;
 	
 	fp = fopen ("newkind.cfg", "w");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return;
 
 	fprintf (fp, "%d\t\t# Game Speed, the lower the number the faster the game.\n", speed_cap);
@@ -79,7 +79,7 @@ int read_cfg_line (char *str, int max_size, FILE *fp)
 
 	do
 	{	
-		if (fgets (str, max_size, fp) == NULL)
+		if (fgets (str, max_size, fp) == nullptr)
 			return -1;
 
 		for (s = str; *s; s++)					/* End of line at LF or # */
@@ -113,13 +113,13 @@ int read_cfg_line (char *str, int max_size, FILE *fp)
  * Read in the scanner .cfg file.
  */
 
-void read_scanner_config_file (char *filename)
+void read_scanner_config_file (const char *filename)
 {
 	FILE *fp;
 	char str[256];
 	
 	fp = fopen (filename, "r");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return;
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
@@ -151,7 +151,7 @@ void read_config_file (void)
 	int extra_idx = 0;
 	
 	fp = fopen ("newkind.cfg", "r");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return;
 
 	if (read_cfg_line (str, sizeof(str), fp) == 0)
@@ -174,7 +174,7 @@ void read_config_file (void)
 
 	while (read_cfg_line (str, sizeof(str), fp) == 0)
 	{
-		if (strstr(str, ".cfg") != NULL)
+		if (strstr(str, ".cfg") != nullptr)
 		{
 			read_scanner_config_file (str);
 			break;
@@ -215,7 +215,7 @@ int checksum (unsigned char *block)
 }
 
 
-int save_commander_file (char *path)
+int save_commander_file (const char *path)
 {
 	FILE *fp;
 	unsigned char block[256];
@@ -223,7 +223,7 @@ int save_commander_file (char *path)
 	int chk;
 	
 	fp = fopen (path, "wb");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return 1;
 	
 	block[0]  = cmdr.mission;
@@ -293,7 +293,7 @@ int save_commander_file (char *path)
 }
 
 
-int load_commander_file (char *path)
+int load_commander_file (const char *path)
 {
 	FILE *fp;
 	unsigned char block[256];
@@ -301,7 +301,7 @@ int load_commander_file (char *path)
 	int chk;
 	
 	fp = fopen (path, "rb");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return 1;
 
 	if (fread (block, 256, 1, fp) != 1)

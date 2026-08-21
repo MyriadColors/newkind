@@ -32,7 +32,7 @@
 #include "keyboard.h"
  
 
-char *mission1_brief_a =
+const char *mission1_brief_a =
 	"Greetings Commander, I am Captain Curruthers of "
 	"Her Majesty's Space Navy and I beg a moment of your "
 	"valuable time.  We would like you to do a little job "
@@ -40,7 +40,7 @@ char *mission1_brief_a =
 	"Constrictor, equiped with a top secret new shield "
 	"generator.  Unfortunately it's been stolen.";
 
-char *mission1_brief_b =
+const char *mission1_brief_b =
 	"It went missing from our ship yard on Xeer five months ago "
 	"and was last seen at Reesdice. Your mission should you decide "
 	"to accept it, is to seek and destroy this ship. You are "
@@ -48,7 +48,7 @@ char *mission1_brief_b =
 	"shields and that the Constrictor is fitted with an E.C.M. "
 	"System. Good Luck, Commander. ---MESSAGE ENDS.";
 
-char *mission1_brief_c =
+const char *mission1_brief_c =
 	"It went missing from our ship yard on Xeer five months ago "
 	"and is believed to have jumped to this galaxy. "
 	"Your mission should you decide to accept it, is to seek and "
@@ -56,11 +56,11 @@ char *mission1_brief_c =
 	"will get through the new shields and that the Constrictor is "
 	"fitted with an E.C.M. System. Good Luck, Commander. ---MESSAGE ENDS.";
 
-char *mission1_debrief =
+const char *mission1_debrief =
 	"There will always be a place for you in Her Majesty's Space Navy. "
 	"And maybe sooner than you think... ---MESSAGE ENDS.";
 
-char *mission1_pdesc[] =
+const char *mission1_pdesc[] =
 {
 	"THE CONSTRICTOR WAS LAST SEEN AT REESDICE, COMMANDER.",
 	"A STRANGE LOOKING SHIP LEFT HERE A WHILE BACK. LOOKED BOUND FOR AREXE.",
@@ -76,26 +76,26 @@ char *mission1_pdesc[] =
 	"COMING SOON: ELITE - DARKNESS FALLS.",				
 };
 
-char *mission2_brief_a =
+const char *mission2_brief_a =
 	"Attention Commander, I am Captain Fortesque of Her Majesty's Space Navy. "
 	"We have need of your services again. If you would be so good as to go to "
 	"Ceerdi you will be briefed.If succesful, you will be rewarded."
 	"---MESSAGE ENDS.";
 	
-char *mission2_brief_b =
+const char *mission2_brief_b =
 	"Good Day Commander. I am Agent Blake of Naval Intelligence. As you know, "
 	"the Navy have been keeping the Thargoids off your ass out in deep space "
 	"for many years now. Well the situation has changed. Our boys are ready "
 	"for a push right to the home system of those murderers.";
 
-char *mission2_brief_c =
+const char *mission2_brief_c =
 	"I have obtained the defence plans for their Hive Worlds. The beetles "
 	"know we've got something but not what. If I transmit the plans to our "
 	"base on Birera they'll intercept the transmission. I need a ship to "
 	"make the run. You're elected. The plans are unipulse coded within "
 	"this transmission. You will be paid. Good luck Commander. ---MESSAGE ENDS.";
 
-char *mission2_debrief =
+const char *mission2_debrief =
 	"You have served us well and we shall remember. "
 	"We did not expect the Thargoids to find out about you."
 	"For the moment please accept this Navy Extra Energy Unit as payment. "
@@ -103,12 +103,12 @@ char *mission2_debrief =
 
 	
 
-char *mission_planet_desc (struct galaxy_seed planet)
+const char *mission_planet_desc (struct galaxy_seed planet)
 {
 	int pnum;
 
 	if (!docked)
-		return NULL;
+		return nullptr;
 
 	if ((planet.a != docked_planet.a) ||
 	    (planet.b != docked_planet.b) ||
@@ -116,7 +116,7 @@ char *mission_planet_desc (struct galaxy_seed planet)
 	    (planet.d != docked_planet.d) ||
 	    (planet.e != docked_planet.e) ||
 	    (planet.f != docked_planet.f))
-		return NULL;
+		return nullptr;
 	
 	pnum = find_planet_number (planet);
 	
@@ -174,7 +174,7 @@ char *mission_planet_desc (struct galaxy_seed planet)
 	if ((cmdr.galaxy_number == 2) && (pnum == 101))
 		return mission1_pdesc[9];							
 	
-	return NULL;
+	return nullptr;
 }
 
 

@@ -176,7 +176,7 @@ void scoop_item (int un)
 		return;					
 	}
 
-	if (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != NULL && ship_list[type]->scoop_type != 0)
+	if (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != nullptr && ship_list[type]->scoop_type != 0)
 	{
 		trade = ship_list[type]->scoop_type + 1;
 		cmdr.current_cargo[trade]++;

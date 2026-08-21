@@ -27,7 +27,7 @@
 
 
 
-static EliteMatrix start_matrix =
+static const EliteMatrix start_matrix =
 {
 	{1.0, 0.0, 0.0},
 	{0.0, 1.0, 0.0},

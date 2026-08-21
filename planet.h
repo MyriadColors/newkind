@@ -15,15 +15,16 @@
 #ifndef PLANET_H
 #define PLANET_H
 
+#include <stdint.h>
 
 struct galaxy_seed
 {
-	unsigned char a;	/* 6c */
-	unsigned char b;	/* 6d */
-	unsigned char c;	/* 6e */
-	unsigned char d;	/* 6f */
-	unsigned char e;	/* 70 */
-	unsigned char f;	/* 71 */
+	uint8_t a;	/* 6c */
+	uint8_t b;	/* 6d */
+	uint8_t c;	/* 6e */
+	uint8_t d;	/* 6f */
+	uint8_t e;	/* 70 */
+	uint8_t f;	/* 71 */
 };
 
 
@@ -38,10 +39,7 @@ struct planet_data
 };
 
 
-
-
-
-char *describe_planet (struct galaxy_seed);
+const char *describe_planet (struct galaxy_seed);
 void capitalise_name (char *name);
 void name_planet (char *gname, struct galaxy_seed glx);
 struct galaxy_seed find_planet (int cx, int cy);

@@ -21,8 +21,8 @@
 
 void write_config_file (void);
 void read_config_file (void);
-int save_commander_file (char *path);
-int load_commander_file (char *path);
+int save_commander_file (const char *path);
+int load_commander_file (const char *path);
 
 #endif
 

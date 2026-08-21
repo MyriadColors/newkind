@@ -20,7 +20,7 @@ void display_galactic_chart (void);
 void display_data_on_planet (void);
 void show_distance_to_planet (void);
 void move_cursor_to_origin (void);
-void find_planet_by_name (char *find_name);
+void find_planet_by_name (const char *find_name);
 void draw_cross (int cx, int cy);
 void handle_chart_mouse_input (void);
 void display_market_prices (void);

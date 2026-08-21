@@ -63,7 +63,7 @@ void draw_wireframe_ship (struct univ_object *univ)
 	struct ship_data *ship;
 	int lasv;
 
-	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == nullptr)
 		return;
 
 	ship = ship_list[univ->type];
@@ -188,7 +188,7 @@ void draw_solid_ship (struct univ_object *univ)
 	int lasv;
 	int col;
 
-	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == nullptr)
 		return;
 
 	solid_data = &ship_solids[univ->type];
@@ -844,7 +844,7 @@ void draw_explosion (struct univ_object *univ)
 	
 	univ->exp_delta += 4;
 
-	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == nullptr)
 		return;
 
 	ship = ship_list[univ->type];
@@ -995,7 +995,7 @@ void draw_ship (struct univ_object *ship)
 		return;
 	}
 
-	if (ship->type <= 0 || ship->type > NO_OF_SHIPS || ship_list[ship->type] == NULL)
+	if (ship->type <= 0 || ship->type > NO_OF_SHIPS || ship_list[ship->type] == nullptr)
 		return;
 
 	if ((ship->flags & FLG_DEAD) && !(ship->flags & FLG_EXPLOSION))

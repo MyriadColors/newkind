@@ -98,7 +98,7 @@ void snd_sound_shutdown (void)
 
 	for (int i = 0; i < NUM_SAMPLES; i++)
 	{
-		if (sample_list[i].stream.buffer != NULL)
+		if (sample_list[i].stream.buffer != nullptr)
 		{
 			UnloadSound(sample_list[i]);
 		}
@@ -115,7 +115,7 @@ void snd_play_sample (int sample_no)
 
 	if (sample_no >= 0 && sample_no < NUM_SAMPLES)
 	{
-		if (sample_list[sample_no].stream.buffer != NULL)
+		if (sample_list[sample_no].stream.buffer != nullptr)
 		{
 			PlaySound(sample_list[sample_no]);
 		}

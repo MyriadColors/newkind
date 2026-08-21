@@ -36,11 +36,6 @@
 #include "file.h"
 #include "keyboard.h"
 
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
 int cross_timer;
 
 int draw_lasers;
@@ -53,7 +48,7 @@ int yawing;
 int game_paused;
 int have_joystick;
 
-int find_input;
+bool find_input = false;
 char find_name[20];
 
 /*
@@ -61,7 +56,7 @@ char find_name[20];
  */
 void initialise_game(void)
 {
-	set_rand_seed (time(NULL));
+	set_rand_seed (time(nullptr));
 	current_screen = SCR_INTRO_ONE;
 
 	restore_saved_commander();
@@ -78,7 +73,7 @@ void initialise_game(void)
 	mcount = 0;
 	hyper_ready = 0;
 	detonate_bomb = 0;
-	find_input = 0;
+	find_input = false;
 	witchspace = 0;
 	game_paused = 0;
 	auto_pilot = 0;
@@ -422,7 +417,7 @@ void f_pressed (void)
 	if ((current_screen == SCR_GALACTIC_CHART) ||
 		(current_screen == SCR_SHORT_RANGE))
 	{
-		find_input = 1;
+		find_input = true;
 		*find_name = '\0';
 		planet_unknown = 0;
 	}
@@ -519,14 +514,14 @@ void handle_flight_keys (void)
 		
 		if (key == 27) /* ESC */
 		{
-			find_input = 0;
+			find_input = false;
 			planet_unknown = 0;
 			return;
 		}
 
 		if (key == '\r')
 		{
-			find_input = 0;
+			find_input = false;
 			find_planet_by_name (find_name);
 			return;
 		}
@@ -999,13 +994,13 @@ void handle_flight_keys (void)
 	}
 }
 
-void info_message (char *message)
+void info_message (const char *message)
 {
 	strcpy (message_string, message);
 	message_count = 37;
 }
 
-void set_commander_name (char *path)
+void set_commander_name (const char *path)
 {
 	const char *fname = GetFileName(path);
 	char *cname = cmdr.name;
@@ -1013,8 +1008,9 @@ void set_commander_name (char *path)
 
 	for (i = 0; i < 31; i++)
 	{
-		if (!isalnum((unsigned char)*fname))
+		if (!isalnum((unsigned char)*fname)) {
 			break;
+		}
 		*cname++ = toupper((unsigned char)*fname++);
 	}
 
@@ -1100,7 +1096,7 @@ void run_first_intro_screen (void)
 {
 	current_screen = SCR_INTRO_ONE;
 
-	snd_play_midi (SND_ELITE_THEME, TRUE);
+	snd_play_midi (SND_ELITE_THEME, 1);
 
 	initialise_intro1();
 
@@ -1141,7 +1137,7 @@ void run_second_intro_screen (void)
 {
 	current_screen = SCR_INTRO_TWO;
 	
-	snd_play_midi (SND_BLUE_DANUBE, TRUE);
+	snd_play_midi (SND_BLUE_DANUBE, 1);
 		
 	initialise_intro2();
 
