@@ -2,28 +2,78 @@
 # Makefile for Elite - The New Kind (Raylib Port)
 #
 
-CC = gcc
-LIBS = `pkg-config --libs raylib` -lm
-CFLAGS = -O2 -Wall -Wextra -pedantic
+# Detect OS
+ifeq ($(OS),Windows_NT)
+    PLATFORM_OS ?= WINDOWS
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        PLATFORM_OS ?= LINUX
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        PLATFORM_OS ?= OSX
+    endif
+endif
+
+CC ?= clang
+CFLAGS ?= -O2 -Wall -Wextra -pedantic
+
+# Raylib dependency settings
+RAYLIB_VERSION ?= 6.0
+RAYLIB_DIR ?= deps/raylib
+RAYLIB_SRC ?= $(RAYLIB_DIR)/src
+RAYLIB_LIB ?= $(RAYLIB_SRC)/libraylib.a
+
+CFLAGS += -I$(RAYLIB_SRC)
+
+# Platform-specific libraries for Raylib static linking
+ifeq ($(PLATFORM_OS),WINDOWS)
+    LIBS = $(RAYLIB_LIB) -lopengl32 -lgdi32 -lwinmm -lm
+    EXEC_EXT = .exe
+else ifeq ($(PLATFORM_OS),OSX)
+    LIBS = $(RAYLIB_LIB) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm
+    EXEC_EXT =
+else
+    LIBS = $(RAYLIB_LIB) -lGL -lm -lpthread -ldl -lrt -lX11
+    EXEC_EXT =
+endif
+
+EXEC = newkind$(EXEC_EXT)
 
 OBJS = gfx.o main.o docked.o elite.o \
        intro.o planet.o shipdata.o shipface.o sound.o space.o \
        swat.o threed.o vector.o random.o trade.o options.o \
        stars.o missions.o pilot.o file.o keyboard.o
 
-EXEC = newkind
-
 all: $(EXEC)
 
+# Rule to clone raylib if missing
+$(RAYLIB_DIR):
+	@echo "Fetching Raylib $(RAYLIB_VERSION)..."
+	git clone --depth 1 --branch $(RAYLIB_VERSION) https://github.com/raysan5/raylib.git $(RAYLIB_DIR)
+
+# Rule to compile raylib static library
+$(RAYLIB_LIB): $(RAYLIB_DIR)
+	@echo "Building Raylib $(RAYLIB_VERSION)..."
+	$(MAKE) -C $(RAYLIB_SRC) CC=$(CC) RAYLIB_LIBTYPE=STATIC
+
+# Ensure raylib is built before any project object file compiles
+$(OBJS): $(RAYLIB_LIB)
+
 clean:
-	rm -f *.o $(EXEC) $(EXEC)-raylib
+	rm -f *.o $(EXEC) newkind newkind-raylib newkind.exe
+
+clean-deps:
+	rm -rf $(RAYLIB_DIR)
+
+distclean: clean clean-deps
 
 .SUFFIXES : .c .o
 
 .c.o:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(EXEC): $(OBJS)
+$(EXEC): $(OBJS) $(RAYLIB_LIB)
 	$(CC) -o $(EXEC) $(OBJS) $(LIBS)
 
 gfx.o: gfx.c config.h elite.h planet.h gfx.h

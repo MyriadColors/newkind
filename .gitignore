@@ -6,3 +6,5 @@ newkind.exe
 *.png
 *.bmp
 *.nkc
+deps/
+.vscode/launch.json
