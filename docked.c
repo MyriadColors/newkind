@@ -26,6 +26,8 @@
 #include "shipdata.h"
 #include "space.h"
 #include "main.h"
+#include "keyboard.h"
+#include "docked.h"
 
 
 
@@ -66,6 +68,7 @@ void draw_cross (int cx, int cy)
 		gfx_set_clip_region (1, 37, 510, 339);
 		gfx_draw_colour_line (cx - 16, cy, cx + 16, cy, GFX_COL_RED);
 		gfx_draw_colour_line (cx, cy - 16, cx, cy + 16, GFX_COL_RED);
+		gfx_draw_circle (cx, cy, 6, GFX_COL_RED);
 		gfx_set_clip_region (1, 1, 510, 383);
 		return;
 	}
@@ -75,7 +78,34 @@ void draw_cross (int cx, int cy)
 		gfx_set_clip_region (1, 37, 510, 293);
 		gfx_draw_colour_line (cx - 8, cy, cx + 8, cy, GFX_COL_RED);
 		gfx_draw_colour_line (cx, cy - 8, cx, cy + 8, GFX_COL_RED);
+		gfx_draw_circle (cx, cy, 4, GFX_COL_RED);
 		gfx_set_clip_region (1, 1, 510, 383);
+	}
+}
+
+
+void handle_chart_mouse_input (void)
+{
+	if (!mouse_left_down && !mouse_left_pressed)
+		return;
+
+	if (current_screen == SCR_GALACTIC_CHART)
+	{
+		if (mouse_x >= 1 && mouse_x <= 510 && mouse_y >= 37 && mouse_y <= 293)
+		{
+			cross_x = mouse_x;
+			cross_y = mouse_y;
+			show_distance_to_planet();
+		}
+	}
+	else if (current_screen == SCR_SHORT_RANGE)
+	{
+		if (mouse_x >= 1 && mouse_x <= 510 && mouse_y >= 37 && mouse_y <= 339)
+		{
+			cross_x = mouse_x;
+			cross_y = mouse_y;
+			show_distance_to_planet();
+		}
 	}
 }
 
@@ -197,16 +227,22 @@ void find_planet_by_name (char *find_name)
     int i;
 	struct galaxy_seed glx;
 	char planet_name[16];
-	int found;
-	
+	int found = 0;
+	int find_len = strlen (find_name);
+
+	if (find_len == 0)
+	{
+		planet_unknown = 0;
+		return;
+	}
+
+	/* Pass 1: exact match */
 	glx = cmdr.galaxy;
-	found = 0;
-	
 	for (i = 0; i < 256; i++)
 	{
 		name_planet (planet_name, glx);
 		
-		if (strcmp (planet_name, find_name) == 0)
+		if (strcasecmp (planet_name, find_name) == 0)
 		{
 			found = 1;
 			break;
@@ -216,6 +252,27 @@ void find_planet_by_name (char *find_name)
 		waggle_galaxy (&glx);
 		waggle_galaxy (&glx);
 		waggle_galaxy (&glx);
+	}
+
+	/* Pass 2: prefix match if exact not found */
+	if (!found)
+	{
+		glx = cmdr.galaxy;
+		for (i = 0; i < 256; i++)
+		{
+			name_planet (planet_name, glx);
+			
+			if (strncasecmp (planet_name, find_name, find_len) == 0)
+			{
+				found = 1;
+				break;
+			}
+
+			waggle_galaxy (&glx);
+			waggle_galaxy (&glx);
+			waggle_galaxy (&glx);
+			waggle_galaxy (&glx);
+		}
 	}
 
 	if (!found)
@@ -251,7 +308,9 @@ void display_short_range_chart (void)
 	int row_used[64];
 	int row;
 	int blob_size;
-	char str[40];
+	char str[100];
+	struct planet_data hyper_planet_data;
+	int dist;
 
 	current_screen = SCR_SHORT_RANGE;
 
@@ -262,6 +321,16 @@ void display_short_range_chart (void)
 	gfx_draw_line (0, 36, 511, 36);
 
 	draw_fuel_limit_circle (GFX_X_CENTRE, GFX_Y_CENTRE);
+
+	/* Jump trajectory line */
+	dist = calc_distance_to_planet (docked_planet, hyperspace_planet);
+	if (dist > 0)
+	{
+		int line_col = (dist <= cmdr.fuel) ? GFX_COL_GREEN_1 : GFX_COL_DARK_RED;
+		gfx_set_clip_region (1, 37, 510, 339);
+		gfx_draw_colour_line (GFX_X_CENTRE, GFX_Y_CENTRE, cross_x, cross_y, line_col);
+		gfx_set_clip_region (1, 1, 510, 383);
+	}
 
 	for (i = 0; i < 64; i++)
 		row_used[i] = 0;
@@ -308,6 +377,9 @@ void display_short_range_chart (void)
 			continue;
 		}
 
+		int p_dist = calc_distance_to_planet (docked_planet, glx);
+		int in_reach = (p_dist <= cmdr.fuel);
+
 		if (row >= 0 && row < 64 && row_used[row] == 0)
 		{
 			row_used[row] = 1;
@@ -315,17 +387,12 @@ void display_short_range_chart (void)
 			name_planet (planet_name, glx);
 			capitalise_name (planet_name);
 
-			gfx_display_text (px + (4 * GFX_SCALE), (row * 8 - 5) * GFX_SCALE, planet_name);
+			gfx_display_colour_text (px + (4 * GFX_SCALE), (row * 8 - 5) * GFX_SCALE, planet_name, in_reach ? GFX_COL_WHITE : GFX_COL_GREY_1);
 		}
-
-
-		/* The next bit calculates the size of the circle used to represent */
-		/* a planet.  The carry_flag is left over from the name generation. */
-		/* Yes this was how it was done... don't ask :-( */
 
 		blob_size = (glx.f & 1) + 2 + carry_flag;
 		blob_size *= GFX_SCALE;
-		gfx_draw_filled_circle (px, py, blob_size, GFX_COL_GOLD);
+		gfx_draw_filled_circle (px, py, blob_size, in_reach ? GFX_COL_GOLD : GFX_COL_GREY_3);
 
 		waggle_galaxy (&glx);
 		waggle_galaxy (&glx);
@@ -335,20 +402,49 @@ void display_short_range_chart (void)
 
 	if (find_input)
 	{
-		sprintf (str, "Planet Name? %s", find_name);
-		gfx_display_text (16, 340, str);
+		sprintf (str, "FIND PLANET: %s_", find_name);
+		gfx_display_colour_text (16, 344, str, GFX_COL_GOLD);
+		gfx_display_colour_text (16, 358, "Type planet name, [ENTER] target, [ESC] cancel", GFX_COL_WHITE_2);
+		gfx_display_colour_text (16, 372, "[Mouse/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Info  [H] Hyper", GFX_COL_GREY_2);
 	}
 	else if (planet_unknown)
 	{
-		gfx_display_text (16, 340, "Unknown Planet");
+		sprintf (str, "Unknown Planet: '%s'", find_name);
+		gfx_display_colour_text (16, 344, str, GFX_COL_RED);
+		gfx_display_colour_text (16, 358, "Press [F] to search again or [O] for origin", GFX_COL_WHITE_2);
+		gfx_display_colour_text (16, 372, "[Mouse/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Info  [H] Hyper", GFX_COL_GREY_2);
 	}
 	else
 	{
+		generate_planet_data (&hyper_planet_data, hyperspace_planet);
 		name_planet (planet_name, hyperspace_planet);
-		sprintf (str, "%-18s", planet_name);
-		gfx_display_text (16, 340, str);
+		capitalise_name (planet_name);
 
-		show_distance (356, docked_planet, hyperspace_planet);
+		sprintf (str, "%-14s", planet_name);
+		gfx_display_colour_text (16, 344, str, GFX_COL_GOLD);
+
+		if (dist > 0)
+		{
+			sprintf (str, "Dist: %2d.%d LY", dist / 10, dist % 10);
+			gfx_display_text (140, 344, str);
+
+			if (dist <= cmdr.fuel)
+				gfx_display_colour_text (270, 344, "[IN RANGE]", GFX_COL_GREEN_2);
+			else
+				gfx_display_colour_text (270, 344, "[NO FUEL]", GFX_COL_RED);
+		}
+		else
+		{
+			gfx_display_colour_text (140, 344, "[Current System]", GFX_COL_GREEN_1);
+		}
+
+		sprintf (str, "TL:%2d", hyper_planet_data.techlevel + 1);
+		gfx_display_colour_text (375, 344, str, GFX_COL_WHITE_2);
+
+		sprintf (str, "Gov: %-14s  Eco: %-18s", government_type[hyper_planet_data.government], economy_type[hyper_planet_data.economy]);
+		gfx_display_colour_text (16, 358, str, GFX_COL_WHITE_2);
+
+		gfx_display_colour_text (16, 372, "[Click/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Info  [H] Hyper", GFX_COL_GREY_2);
 	}
 
 	draw_cross (cross_x, cross_y);
@@ -361,9 +457,12 @@ void display_galactic_chart (void)
 {
     int i;
 	struct galaxy_seed glx;
-	char str[64];
+	char str[100];
 	int px,py;
 	char planet_name[16];
+	struct planet_data hyper_planet_data;
+	int origin_x, origin_y;
+	int dist;
 
 	current_screen = SCR_GALACTIC_CHART;
 
@@ -376,8 +475,20 @@ void display_galactic_chart (void)
 	gfx_draw_line (0, 36, 511, 36);
 	gfx_draw_line (0, 36+258, 511, 36+258);
 
-	draw_fuel_limit_circle (docked_planet.d * GFX_SCALE,
-					(docked_planet.b / (2 / GFX_SCALE)) + (18 * GFX_SCALE) + 1);
+	origin_x = docked_planet.d * GFX_SCALE;
+	origin_y = (docked_planet.b / (2 / GFX_SCALE)) + (18 * GFX_SCALE) + 1;
+
+	draw_fuel_limit_circle (origin_x, origin_y);
+
+	/* Jump trajectory vector */
+	dist = calc_distance_to_planet (docked_planet, hyperspace_planet);
+	if (dist > 0)
+	{
+		int line_col = (dist <= cmdr.fuel) ? GFX_COL_GREEN_1 : GFX_COL_DARK_RED;
+		gfx_set_clip_region (1, 37, 510, 293);
+		gfx_draw_colour_line (origin_x, origin_y, cross_x, cross_y, line_col);
+		gfx_set_clip_region (1, 1, 510, 383);
+	}
 
 	glx = cmdr.galaxy;
 
@@ -395,25 +506,57 @@ void display_galactic_chart (void)
 		waggle_galaxy (&glx);
 		waggle_galaxy (&glx);
 		waggle_galaxy (&glx);
-
 	}
 
 	if (find_input)
 	{
-		sprintf (str, "Planet Name? %s", find_name);
-		gfx_display_text (16, 340, str);
+		sprintf (str, "FIND PLANET: %s_", find_name);
+		gfx_display_colour_text (16, 304, str, GFX_COL_GOLD);
+		gfx_display_colour_text (16, 324, "Type planet name and press [ENTER] to target, [ESC] to cancel", GFX_COL_WHITE_2);
+		gfx_display_colour_text (16, 344, "Prefix matching supported (e.g. 'LAV' for Lave)", GFX_COL_GREY_1);
+		gfx_display_colour_text (16, 368, "[Mouse/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Data  [H] Hyper", GFX_COL_GREY_2);
 	}
 	else if (planet_unknown)
 	{
-		gfx_display_text (16, 340, "Unknown Planet");
+		sprintf (str, "Unknown Planet: '%s'", find_name);
+		gfx_display_colour_text (16, 304, str, GFX_COL_RED);
+		gfx_display_colour_text (16, 324, "Press [F] to search again or [O] to return to origin", GFX_COL_WHITE_2);
+		gfx_display_colour_text (16, 368, "[Mouse/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Data  [H] Hyper", GFX_COL_GREY_2);
 	}
 	else
 	{
+		generate_planet_data (&hyper_planet_data, hyperspace_planet);
 		name_planet (planet_name, hyperspace_planet);
-		sprintf (str, "%-18s", planet_name);
-		gfx_display_text (16, 340, str);
+		capitalise_name (planet_name);
 
-		show_distance (356, docked_planet, hyperspace_planet);
+		sprintf (str, "%-16s", planet_name);
+		gfx_display_colour_text (16, 304, str, GFX_COL_GOLD);
+
+		if (dist > 0)
+		{
+			sprintf (str, "Distance: %2d.%d LY", dist / 10, dist % 10);
+			gfx_display_text (170, 304, str);
+
+			if (dist <= cmdr.fuel)
+				gfx_display_colour_text (340, 304, "[IN RANGE]", GFX_COL_GREEN_2);
+			else
+				gfx_display_colour_text (340, 304, "[NO FUEL]", GFX_COL_RED);
+		}
+		else
+		{
+			gfx_display_colour_text (170, 304, "Current System", GFX_COL_GREEN_1);
+		}
+
+		sprintf (str, "Economy: %-18s  Gov: %-16s", economy_type[hyper_planet_data.economy], government_type[hyper_planet_data.government]);
+		gfx_display_colour_text (16, 324, str, GFX_COL_WHITE_2);
+
+		sprintf (str, "Tech Level: %2d   Fuel: %2d.%d / %2d.%d LY",
+				 hyper_planet_data.techlevel + 1,
+				 cmdr.fuel / 10, cmdr.fuel % 10,
+				 myship.max_fuel / 10, myship.max_fuel % 10);
+		gfx_display_colour_text (16, 344, str, GFX_COL_WHITE_2);
+
+		gfx_display_colour_text (16, 368, "[Click/Arrows] Move  [O] Origin  [D] Snap  [F] Find  [F7] Info  [H] Hyper", GFX_COL_GREY_2);
 	}
 
 	draw_cross (cross_x, cross_y);

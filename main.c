@@ -107,17 +107,19 @@ void move_cross (int dx, int dy)
 	cross_timer = 5;
 	planet_unknown = 0;
 
+	int step = kbd_shift_down ? 3 : 1;
+
 	if (current_screen == SCR_SHORT_RANGE)
 	{
-		cross_x += (dx * 4);
-		cross_y += (dy * 4);
+		cross_x += (dx * 4 * step);
+		cross_y += (dy * 4 * step);
 		return;
 	}
 
 	if (current_screen == SCR_GALACTIC_CHART)
 	{
-		cross_x += (dx * 2);
-		cross_y += (dy * 2);
+		cross_x += (dx * 2 * step);
+		cross_y += (dy * 2 * step);
 
 		if (cross_x < 1)
 			cross_x = 1;
@@ -508,6 +510,13 @@ void handle_flight_keys (void)
 	{
 		key = kbd_read_key();
 		
+		if (key == 27) /* ESC */
+		{
+			find_input = 0;
+			planet_unknown = 0;
+			return;
+		}
+
 		if (key == '\r')
 		{
 			find_input = 0;
@@ -534,6 +543,11 @@ void handle_flight_keys (void)
 		}
 
 		return;
+	}
+
+	if (current_screen == SCR_GALACTIC_CHART || current_screen == SCR_SHORT_RANGE)
+	{
+		handle_chart_mouse_input();
 	}
 
 	if (kbd_F1_pressed)
