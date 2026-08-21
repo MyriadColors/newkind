@@ -25,8 +25,6 @@
 
 #include "vector.h"
 
-#include "alg_data.h"
-
 #include "config.h"
 #include "elite.h"
 #include "gfx.h"
@@ -134,8 +132,11 @@ void move_univ_object (struct univ_object *obj)
 		{
 			obj->velocity += obj->acceleration;
 			obj->acceleration = 0;
-			if (obj->velocity > ship_list[obj->type]->velocity)
-				obj->velocity = ship_list[obj->type]->velocity;
+			if (obj->type > 0 && obj->type <= NO_OF_SHIPS && ship_list[obj->type] != NULL)
+			{
+				if (obj->velocity > ship_list[obj->type]->velocity)
+					obj->velocity = ship_list[obj->type]->velocity;
+			}
 			
 			if (obj->velocity <= 0)
 				obj->velocity = 1;
@@ -590,7 +591,7 @@ void update_universe (void)
 				if (type == SHIP_VIPER)
 					cmdr.legal_status |= 64;
 			
-				bounty = ship_list[type]->bounty;
+				bounty = (type > 0 && type <= NO_OF_SHIPS && ship_list[type] != NULL) ? ship_list[type]->bounty : 0;
 				
 				if ((bounty != 0) && (!witchspace))
 				{

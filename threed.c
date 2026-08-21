@@ -63,6 +63,9 @@ void draw_wireframe_ship (struct univ_object *univ)
 	struct ship_data *ship;
 	int lasv;
 
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
+		return;
+
 	ship = ship_list[univ->type];
 	
 	for (i = 0; i < 3; i++)
@@ -184,6 +187,9 @@ void draw_solid_ship (struct univ_object *univ)
 	Matrix trans_mat;
 	int lasv;
 	int col;
+
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
+		return;
 
 	solid_data = &ship_solids[univ->type];
 	ship = ship_list[univ->type];
@@ -837,7 +843,7 @@ void draw_explosion (struct univ_object *univ)
 	
 	univ->exp_delta += 4;
 
-	if (univ->location.z <= 0)
+	if (univ->type <= 0 || univ->type > NO_OF_SHIPS || ship_list[univ->type] == NULL)
 		return;
 
 	ship = ship_list[univ->type];
@@ -973,19 +979,6 @@ void draw_ship (struct univ_object *ship)
 		(current_screen != SCR_GAME_OVER) && (current_screen != SCR_ESCAPE_POD))
 		return;
 	
-	if ((ship->flags & FLG_DEAD) && !(ship->flags & FLG_EXPLOSION))
-	{
-		ship->flags |= FLG_EXPLOSION;
-		ship->exp_seed = randint();
-		ship->exp_delta = 18; 
-	}
-
-	if (ship->flags & FLG_EXPLOSION)
-	{
-		draw_explosion (ship);
-		return;
-	}
-	
 	if (ship->location.z <= 0)	/* Only display ships in front of us. */
 		return;
 
@@ -998,6 +991,22 @@ void draw_ship (struct univ_object *ship)
 	if (ship->type == SHIP_SUN)
 	{
 		draw_sun (ship);
+		return;
+	}
+
+	if (ship->type <= 0 || ship->type > NO_OF_SHIPS || ship_list[ship->type] == NULL)
+		return;
+
+	if ((ship->flags & FLG_DEAD) && !(ship->flags & FLG_EXPLOSION))
+	{
+		ship->flags |= FLG_EXPLOSION;
+		ship->exp_seed = randint();
+		ship->exp_delta = 18; 
+	}
+
+	if (ship->flags & FLG_EXPLOSION)
+	{
+		draw_explosion (ship);
 		return;
 	}
 	

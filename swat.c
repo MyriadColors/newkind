@@ -276,7 +276,8 @@ void launch_loot (int un, int loot)
 		if (cnt >= 128)
 			return;
 
-		cnt &= ship_list[universe[un].type]->max_loot;
+		if (universe[un].type > 0 && universe[un].type <= NO_OF_SHIPS && ship_list[universe[un].type] != NULL)
+			cnt &= ship_list[universe[un].type]->max_loot;
 		cnt &= 15;
 	}
 
@@ -296,6 +297,9 @@ int in_target (int type, double x, double y, double z)
 	if (z < 0)
 		return 0;
 		
+	if (type <= 0 || type > NO_OF_SHIPS || ship_list[type] == NULL)
+		return 0;
+
 	size = ship_list[type]->size;
 
 	return ((x*x + y*y) <= size);	
@@ -639,6 +643,9 @@ void tactics (int un)
 	if ((type == SHIP_PLANET) || (type == SHIP_SUN))
 		return;
 	
+	if (type <= 0 || type > NO_OF_SHIPS || ship_list[type] == NULL)
+		return;
+
 	if (flags & FLG_DEAD)
 		return;
 

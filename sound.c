@@ -1,145 +1,169 @@
 /*
- * Elite - The New Kind.
+ * Elite - The New Kind (Raylib Port)
  *
- * Reverse engineered from the BBC disk version of Elite.
- * Additional material by C.J.Pinder.
- *
- * The original Elite code is (C) I.Bell & D.Braben 1984.
- * This version re-engineered in C by C.J.Pinder 1999-2001.
- *
- * email: <christian@newkind.co.uk>
- *
- *
+ * Raylib version of sound effects and music handler.
  */
 
-/*
- * sound.c
- */
-
-#include <stdlib.h>
-#include <allegro.h>
+#include <stdio.h>
+#define Matrix RaylibMatrix
+#include "raylib.h"
+#undef Matrix
 #include "sound.h"
-#include "alg_data.h" 
 
-#define NUM_SAMPLES 14 
+#define NUM_SAMPLES 14
+#define NUM_MUSIC   2
 
-extern DATAFILE *datafile;
+static Sound sample_list[NUM_SAMPLES];
+static Music music_list[NUM_MUSIC];
+static bool music_loaded[NUM_MUSIC] = { false, false };
+static int current_music_idx = -1;
+static bool sound_active = false;
 
-static int sound_on;
-
-struct sound_sample
-{
- 	SAMPLE *sample;
-	char filename[256];
-	int runtime;
-	int timeleft;
+static const char *sample_files[NUM_SAMPLES] = {
+	"launch.wav",    /* SND_LAUNCH */
+	"crash.wav",     /* SND_CRASH */
+	"dock.wav",      /* SND_DOCK */
+	"gameover.wav",  /* SND_GAMEOVER */
+	"pulse.wav",     /* SND_PULSE */
+	"hitem.wav",     /* SND_HIT_ENEMY */
+	"explode.wav",   /* SND_EXPLODE */
+	"ecm.wav",       /* SND_ECM */
+	"missile.wav",   /* SND_MISSILE */
+	"hyper.wav",     /* SND_HYPERSPACE */
+	"incom1.wav",    /* SND_INCOMMING_FIRE_1 */
+	"incom2.wav",    /* SND_INCOMMING_FIRE_2 */
+	"beep.wav",      /* SND_BEEP */
+	"boop.wav"       /* SND_BOOP */
 };
 
-struct sound_sample sample_list[NUM_SAMPLES] =
-{
-	{NULL, "launch.wav",    32, 0},
-	{NULL, "crash.wav",      7, 0},
-	{NULL, "dock.wav",      36, 0},
-	{NULL, "gameover.wav",  24, 0},
-	{NULL, "pulse.wav",      4, 0},
-	{NULL, "hitem.wav",		 4, 0},
-	{NULL, "explode.wav",	23, 0},
-	{NULL, "ecm.wav",		23, 0},
-	{NULL, "missile.wav",	25, 0},
-	{NULL, "hyper.wav",	    37, 0},
-	{NULL, "incom1.wav",	 4, 0},
-	{NULL, "incom2.wav",	 5, 0},
-	{NULL, "beep.wav",		 2, 0},
-	{NULL, "boop.wav",		 7, 0},
+static const char *music_candidates[NUM_MUSIC][4] = {
+	{ "theme.ogg", "theme.wav", "theme.mp3", "data/theme.ogg" },     /* SND_ELITE_THEME */
+	{ "danube.ogg", "danube.wav", "danube.mp3", "data/danube.ogg" }   /* SND_BLUE_DANUBE */
 };
- 
- 
+
 void snd_sound_startup (void)
 {
-	int i;
-
- 	/* Install a sound driver.. */
-	sound_on = 1;
-	
-	if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, ".") != 0)
+	InitAudioDevice();
+	if (!IsAudioDeviceReady())
 	{
-		sound_on = 0;
+		sound_active = false;
 		return;
 	}
 
-	/* Load the sound samples... */
+	sound_active = true;
 
-	for (i = 0; i < NUM_SAMPLES; i++)
+	for (int i = 0; i < NUM_SAMPLES; i++)
 	{
-		sample_list[i].sample = load_sample(sample_list[i].filename);
-	}
-}
- 
-
-void snd_sound_shutdown (void)
-{
-	int i;
-
-	if (!sound_on)
-		return;
-
-	for (i = 0; i < NUM_SAMPLES; i++)
-	{
-		if (sample_list[i].sample != NULL)
+		if (FileExists(sample_files[i]))
 		{
-			destroy_sample (sample_list[i].sample);
-			sample_list[i].sample = NULL;
+			sample_list[i] = LoadSound(sample_files[i]);
+		}
+		else
+		{
+			sample_list[i] = (Sound){ 0 };
+		}
+	}
+
+	for (int m = 0; m < NUM_MUSIC; m++)
+	{
+		music_loaded[m] = false;
+		for (int c = 0; c < 4; c++)
+		{
+			if (FileExists(music_candidates[m][c]))
+			{
+				music_list[m] = LoadMusicStream(music_candidates[m][c]);
+				music_loaded[m] = true;
+				break;
+			}
 		}
 	}
 }
 
+void snd_sound_shutdown (void)
+{
+	if (!sound_active)
+		return;
+
+	snd_stop_midi();
+
+	for (int m = 0; m < NUM_MUSIC; m++)
+	{
+		if (music_loaded[m])
+		{
+			UnloadMusicStream(music_list[m]);
+			music_loaded[m] = false;
+		}
+	}
+
+	for (int i = 0; i < NUM_SAMPLES; i++)
+	{
+		if (sample_list[i].stream.buffer != NULL)
+		{
+			UnloadSound(sample_list[i]);
+		}
+	}
+
+	CloseAudioDevice();
+	sound_active = false;
+}
 
 void snd_play_sample (int sample_no)
 {
-	if (!sound_on)
+	if (!sound_active)
 		return;
 
-	if (sample_list[sample_no].timeleft != 0)
-		return;
-
-	sample_list[sample_no].timeleft = sample_list[sample_no].runtime;
-		
-	play_sample (sample_list[sample_no].sample, 255, 128, 1000, FALSE);
-}
-
-
-void snd_update_sound (void)
-{
-	int i;
-	
-	for (i = 0; i < NUM_SAMPLES; i++)
+	if (sample_no >= 0 && sample_no < NUM_SAMPLES)
 	{
-		if (sample_list[i].timeleft > 0)
-			sample_list[i].timeleft--;
+		if (sample_list[sample_no].stream.buffer != NULL)
+		{
+			PlaySound(sample_list[sample_no]);
+		}
 	}
 }
-
 
 void snd_play_midi (int midi_no, int repeat)
 {
-	if (!sound_on)
+	if (!sound_active)
 		return;
-	
-	switch (midi_no)
+
+	if (midi_no >= 0 && midi_no < NUM_MUSIC)
 	{
-		case SND_ELITE_THEME:
-			play_midi (datafile[THEME].dat, repeat);
-			break;
-		
-		case SND_BLUE_DANUBE:
-			play_midi (datafile[DANUBE].dat, repeat);
-			break;
+		snd_stop_midi();
+
+		if (music_loaded[midi_no])
+		{
+			current_music_idx = midi_no;
+			music_list[midi_no].looping = (repeat != 0);
+			PlayMusicStream(music_list[midi_no]);
+		}
 	}
 }
 
+void snd_update_sound (void)
+{
+	if (!sound_active)
+		return;
+
+	if (current_music_idx >= 0 && current_music_idx < NUM_MUSIC)
+	{
+		if (music_loaded[current_music_idx] && IsMusicStreamPlaying(music_list[current_music_idx]))
+		{
+			UpdateMusicStream(music_list[current_music_idx]);
+		}
+	}
+}
 
 void snd_stop_midi (void)
 {
-	if (sound_on)
-		play_midi (NULL, TRUE);
+	if (!sound_active)
+		return;
+
+	if (current_music_idx >= 0 && current_music_idx < NUM_MUSIC)
+	{
+		if (music_loaded[current_music_idx])
+		{
+			StopMusicStream(music_list[current_music_idx]);
+		}
+		current_music_idx = -1;
+	}
 }

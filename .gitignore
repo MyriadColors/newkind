@@ -1,4 +1,5 @@
 *.o
 newkind
+newkind-raylib
 newkind.exe
 *.log

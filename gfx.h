@@ -39,9 +39,7 @@
 #define GFX_VIEW_BX		509
 #define GFX_VIEW_BY		381
 
-#endif
-
-#ifdef RES_800_600
+#elif defined(RES_800_600)
 
 #define GFX_SCALE		(2)
 #define GFX_X_OFFSET	(144)
@@ -152,5 +150,6 @@ void gfx_render_polygon (int num_points, int *point_list, int face_colour, int z
 void gfx_render_line (int x1, int y1, int x2, int y2, int dist, int col);
 void gfx_finish_render (void);
 int gfx_request_file (char *title, char *path, char *ext);
+void xor_mode (int mode);
 
 #endif
