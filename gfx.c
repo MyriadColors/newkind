@@ -8,10 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#define Matrix RaylibMatrix
 #include "raylib.h"
-#undef Matrix
 
 #include "config.h"
 #include "gfx.h"
@@ -291,6 +291,7 @@ void gfx_clear_area(int tx, int ty, int bx, int by)
 
 void gfx_display_pretty_text(int tx, int ty, int bx, int by, char *txt)
 {
+	(void)by;
 	char strbuf[100];
 	char *str = txt;
 	int len = strlen(txt);
@@ -583,7 +584,7 @@ int gfx_request_file(char *title, char *path, char *ext)
 		gfx_draw_colour_line(80, 190, 80, 220, GFX_COL_WHITE);
 		gfx_draw_colour_line(432, 190, 432, 220, GFX_COL_WHITE);
 
-		char display_buf[80];
+		char display_buf[260];
 		snprintf(display_buf, sizeof(display_buf), "%s_", input_buf);
 		gfx_display_text(90, 200, display_buf);
 

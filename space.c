@@ -451,7 +451,7 @@ void make_station_appear (void)
 	double px,py,pz;
 	double sx,sy,sz;
 	Vector vec;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	
 	px = universe[0].location.x;
 	py = universe[0].location.y;
@@ -1185,7 +1185,7 @@ void enter_witchspace (void)
 
 void complete_hyperspace (void)
 {
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int px,py,pz;
 	
 	hyper_ready = 0;
@@ -1316,7 +1316,7 @@ void jump_warp (void)
 
 void launch_player (void)
 {
-	Matrix rotmat;
+	EliteMatrix rotmat;
 
 	docked = 0;
 	flight_speed = 12;

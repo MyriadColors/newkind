@@ -287,13 +287,13 @@ void display_short_range_chart (void)
 
 		row = py / (8 * GFX_SCALE);
 
-		if (row_used[row] == 1)
+		if (row >= 0 && row < 64 && row_used[row] == 1)
 		    row++;
 
-		if (row_used[row] == 1)
+		if (row >= 0 && row < 64 && row_used[row] == 1)
 			row -= 2;
 
-		if (row <= 3)
+		if (row <= 3 || row >= 64)
 		{
 			waggle_galaxy (&glx);
 			waggle_galaxy (&glx);
@@ -303,7 +303,7 @@ void display_short_range_chart (void)
 			continue;
 		}
 
-		if (row_used[row] == 0)
+		if (row >= 0 && row < 64 && row_used[row] == 0)
 		{
 			row_used[row] = 1;
 

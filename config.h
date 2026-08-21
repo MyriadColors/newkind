@@ -22,30 +22,28 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 /*
  * Set the graphics platform we are using...
  */
 
-#define GFX_ALLEGRO
-
-/*
- * #define GFX_WIN32_GDI
- * #define GFX_OPENGL
- * #defime GFX_X_WINDOWS
- * #define GFX_DIRECTX
- */
+#define GFX_RAYLIB
 
 /*
  * Set the screen resolution...
  * (if nothing is defined, assume 256x256).
  */
 
-#define RES_800_600
-// #define RES_512_512
+#ifndef RES_512_512
+#define RES_512_512
+#endif
 
-/*
- * #define RES_640_480
- * #define RES_320_240
- */
+#define RES_800_600
+#define RES_640_480
+#define RES_320_240
+
 
 #endif
+

@@ -180,7 +180,7 @@ char *mission_planet_desc (struct galaxy_seed planet)
 
 void constrictor_mission_brief (void)
 {
-	Matrix rotmat;
+	EliteMatrix rotmat;
 
 	cmdr.mission = 1;
 

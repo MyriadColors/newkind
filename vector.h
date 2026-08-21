@@ -22,7 +22,8 @@ struct vector
 	double z;
 };
 
-typedef struct vector Matrix[3];
+typedef struct vector EliteMatrix[3];
+typedef struct vector Mat3[3];
 typedef struct vector Vector;
 
 void mult_matrix (struct vector *first, struct vector *second);

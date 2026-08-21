@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "elite.h"
 #include "config.h"
@@ -312,12 +313,12 @@ int load_commander_file (char *path)
 	saved_cmdr.galaxy.c = block[5];
 	saved_cmdr.galaxy.d = block[6];
 	saved_cmdr.galaxy.e = block[7];
-	saved_cmdr.galaxy.f = block[8];;
+	saved_cmdr.galaxy.f = block[8];
 	
-	saved_cmdr.credits = block[9] << 24;
-	saved_cmdr.credits += block[10] << 16;
-	saved_cmdr.credits += block[11] << 8;
-	saved_cmdr.credits += block[12];
+	saved_cmdr.credits = (int)(((uint32_t)block[9] << 24) |
+	                           ((uint32_t)block[10] << 16) |
+	                           ((uint32_t)block[11] << 8) |
+	                           ((uint32_t)block[12]));
 
 	saved_cmdr.fuel = block[13];
 

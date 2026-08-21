@@ -5,9 +5,10 @@
  */
 
 #include <stdio.h>
-#define Matrix RaylibMatrix
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "raylib.h"
-#undef Matrix
 #include "sound.h"
 
 #define NUM_SAMPLES 14

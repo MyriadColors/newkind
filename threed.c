@@ -49,7 +49,7 @@ static struct point point_list[100];
 
 void draw_wireframe_ship (struct univ_object *univ)
 {
-	Matrix trans_mat;
+	EliteMatrix trans_mat;
 	int i;
 	int sx,sy,ex,ey;
 	double rx,ry,rz;
@@ -184,7 +184,7 @@ void draw_solid_ship (struct univ_object *univ)
 	int zavg;
 	struct ship_solid *solid_data;
 	struct ship_data *ship;
-	Matrix trans_mat;
+	EliteMatrix trans_mat;
 	int lasv;
 	int col;
 
@@ -629,6 +629,7 @@ void render_planet (int xo, int yo, int radius, struct vector *vec)
 
 void draw_wireframe_planet (int xo, int yo, int radius, struct vector *vec)
 {
+	(void)vec;
 	gfx_draw_circle (xo, yo, radius, GFX_COL_WHITE);
 }
 
@@ -820,7 +821,7 @@ void draw_explosion (struct univ_object *univ)
 	int px,py;
 	int cnt;
 	int sizex,sizey,psx,psy;
-	Matrix trans_mat;
+	EliteMatrix trans_mat;
 	int sx,sy;
 	double rx,ry,rz;
 	int visible[32];

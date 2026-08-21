@@ -27,7 +27,7 @@
 
 
 
-static Matrix start_matrix =
+static EliteMatrix start_matrix =
 {
 	{1.0, 0.0, 0.0},
 	{0.0, 1.0, 0.0},
@@ -45,7 +45,7 @@ static Matrix start_matrix =
 void mult_matrix (struct vector *first, struct vector *second)
 {
 	int i;
-	Matrix rv;
+	EliteMatrix rv;
 
 	for (i = 0; i < 3; i++)
 	{
@@ -148,18 +148,19 @@ void tidy_matrix (struct vector *mat)
 {
 	mat[2] = unit_vector (&mat[2]);
 
-	if ((mat[2].x > -1) && (mat[2].x < 1))
+	double abs_x = fabs(mat[2].x);
+	double abs_y = fabs(mat[2].y);
+	double abs_z = fabs(mat[2].z);
+
+	if (abs_z >= abs_x && abs_z >= abs_y && abs_z > 1e-7)
 	{
-		if ((mat[2].y > -1) && (mat[2].y < 1))
-		{
-			mat[1].z = -(mat[2].x * mat[1].x + mat[2].y * mat[1].y) / mat[2].z;
-		}
-		else
-		{
-			mat[1].y = -(mat[2].x * mat[1].x + mat[2].z * mat[1].z) / mat[2].y;
-		}
+		mat[1].z = -(mat[2].x * mat[1].x + mat[2].y * mat[1].y) / mat[2].z;
 	}
-	else
+	else if (abs_y >= abs_x && abs_y > 1e-7)
+	{
+		mat[1].y = -(mat[2].x * mat[1].x + mat[2].z * mat[1].z) / mat[2].y;
+	}
+	else if (abs_x > 1e-7)
 	{
 		mat[1].x = -(mat[2].y * mat[1].y + mat[2].z * mat[1].z) / mat[2].x;
 	}

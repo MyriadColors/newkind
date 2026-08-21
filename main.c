@@ -10,10 +10,10 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#define Matrix RaylibMatrix
 #include "raylib.h"
-#undef Matrix
 
 #include "config.h"
 #include "gfx.h"
@@ -1183,7 +1183,7 @@ void run_game_over_screen(void)
 {
 	int i;
 	int newship;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int type;
 	
 	current_screen = SCR_GAME_OVER;

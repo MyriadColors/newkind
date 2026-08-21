@@ -46,7 +46,7 @@ static int min_dist[NO_OF_SHIPS+1] = {0, 200, 800, 200,   200, 200, 300, 384,   
 							 	  900};
 
 
-static Matrix intro_ship_matrix;
+static EliteMatrix intro_ship_matrix;
 
 
 void initialise_intro1 (void)
@@ -59,7 +59,7 @@ void initialise_intro1 (void)
 
 void initialise_intro2 (void)
 {
-	ship_no = 0;
+	ship_no = 1;
 	show_time = 0;
 	direction = 100;
 

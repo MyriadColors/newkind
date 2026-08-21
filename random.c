@@ -48,7 +48,7 @@ int randint (void)
 
 void set_rand_seed (int seed)
 {
-	rand_seed = seed;
+	rand_seed = (seed == 0) ? 1 : seed;
 }
 
 

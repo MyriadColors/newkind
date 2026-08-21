@@ -33,7 +33,7 @@ struct univ_object
 {
 	int type;
 	Vector location;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int rotx;
 	int rotz;
 	int flags;
@@ -57,7 +57,7 @@ extern int ship_count[NO_OF_SHIPS + 1];  /* many */
 
 void clear_universe (void);
 int add_new_ship (int ship_type, int x, int y, int z, struct vector *rotmat, int rotx, int rotz);
-void add_new_station (double sx, double sy, double sz, Matrix rotmat);
+void add_new_station (double sx, double sy, double sz, EliteMatrix rotmat);
 void remove_ship (int un);
 void move_univ_object (struct univ_object *obj);
 void update_universe (void);

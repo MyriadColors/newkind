@@ -172,7 +172,7 @@ void check_missiles (int un)
 void remove_ship (int un)
 {
 	int type;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int px,py,pz;
 	
 	type = universe[un].type;
@@ -202,7 +202,7 @@ void remove_ship (int un)
 }
 
 
-void add_new_station (double sx, double sy, double sz, Matrix rotmat)
+void add_new_station (double sx, double sy, double sz, EliteMatrix rotmat)
 {
 	int station;
 	
@@ -443,7 +443,7 @@ void fire_missile (void)
 {
 	int newship;
 	struct univ_object *ns;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 
 	if (missile_target < 0)
 		return;
@@ -965,7 +965,7 @@ void cool_laser (void)
 
 int create_other_ship (int type)
 {
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int x,y,z;
 	int newship;
 	
@@ -1141,7 +1141,7 @@ void check_for_others (void)
 {
 	int x,y,z;
 	int newship;
-	Matrix rotmat;
+	EliteMatrix rotmat;
 	int gov;
 	int rnd;
 	int type;

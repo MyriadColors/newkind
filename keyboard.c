@@ -4,9 +4,10 @@
  * Raylib version of keyboard input handler.
  */
 
-#define Matrix RaylibMatrix
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "raylib.h"
-#undef Matrix
 #include "keyboard.h"
 #include "elite.h"
 
