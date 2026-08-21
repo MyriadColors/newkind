@@ -21,6 +21,7 @@ void display_data_on_planet (void);
 void show_distance_to_planet (void);
 void move_cursor_to_origin (void);
 void find_planet_by_name (char *find_name);
+void draw_cross (int cx, int cy);
 void display_market_prices (void);
 void display_commander_status (void);
 int calc_distance_to_planet (struct galaxy_seed from_planet, struct galaxy_seed to_planet);
@@ -38,6 +39,7 @@ void buy_equip (void);
 
 extern int cross_x;
 extern int cross_y;
+extern int planet_unknown;
 
 #endif
 

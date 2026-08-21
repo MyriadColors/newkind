@@ -41,7 +41,6 @@
 #define FALSE 0
 #endif
 
-int old_cross_x, old_cross_y;
 int cross_timer;
 
 int draw_lasers;
@@ -106,6 +105,7 @@ void finish_game (void)
 void move_cross (int dx, int dy)
 {
 	cross_timer = 5;
+	planet_unknown = 0;
 
 	if (current_screen == SCR_SHORT_RANGE)
 	{
@@ -130,30 +130,6 @@ void move_cross (int dx, int dy)
 		
 		if (cross_y > 293)
 			cross_y = 293;
-	}
-}
-
-void draw_cross (int cx, int cy)
-{
-	if (current_screen == SCR_SHORT_RANGE)
-	{
-		gfx_set_clip_region (1, 37, 510, 339);
-		xor_mode (TRUE);
-		gfx_draw_colour_line (cx - 16, cy, cx + 16, cy, GFX_COL_RED);
-		gfx_draw_colour_line (cx, cy - 16, cx, cy + 16, GFX_COL_RED);
-		xor_mode (FALSE);
-		gfx_set_clip_region (1, 1, 510, 383);
-		return;
-	}
-	
-	if (current_screen == SCR_GALACTIC_CHART)
-	{
-		gfx_set_clip_region (1, 37, 510, 293);
-		xor_mode (TRUE);
-		gfx_draw_colour_line (cx - 8, cy, cx + 8, cy, GFX_COL_RED);
-		gfx_draw_colour_line (cx, cy - 8, cx, cy + 8, GFX_COL_RED);
-		xor_mode (FALSE);
-		gfx_set_clip_region (1, 1, 510, 383);
 	}
 }
 
@@ -439,14 +415,13 @@ void f_pressed (void)
 	{
 		find_input = 1;
 		*find_name = '\0';
-		gfx_clear_text_area();
-		gfx_display_text (16, 340, "Planet Name?");
+		planet_unknown = 0;
 	}
 }
 
 void add_find_char (int letter)
 {
-	char str[40];
+	char str[2];
 	
 	if (strlen (find_name) == 16)
 		return;
@@ -454,26 +429,15 @@ void add_find_char (int letter)
 	str[0] = toupper (letter);
 	str[1] = '\0';
 	strcat (find_name, str);
-
-	sprintf (str, "Planet Name? %s", find_name);		
-	gfx_clear_text_area ();
-	gfx_display_text(16, 340, str);
 }
 
 void delete_find_char (void)
 {
-	char str[40];
-	int len;
-
-	len = strlen (find_name);
+	int len = strlen (find_name);
 	if (len == 0)
 		return;
 		
 	find_name[len - 1] = '\0';	
-		
-	sprintf (str, "Planet Name? %s", find_name);		
-	gfx_clear_text_area();
-	gfx_display_text(16, 340, str);
 }
 
 void o_pressed()
@@ -628,6 +592,11 @@ void handle_flight_keys (void)
 		if (current_screen != SCR_GALACTIC_CHART)
 		{
 			current_screen = SCR_GALACTIC_CHART;
+			cross_x = hyperspace_planet.d * GFX_SCALE;
+			cross_y = (hyperspace_planet.b / (2 / GFX_SCALE)) + (18 * GFX_SCALE) + 1;
+			cross_timer = 0;
+			planet_unknown = 0;
+			find_input = 0;
 			display_galactic_chart();
 		}
 	}
@@ -637,6 +606,11 @@ void handle_flight_keys (void)
 		if (current_screen != SCR_SHORT_RANGE)
 		{
 			current_screen = SCR_SHORT_RANGE;
+			cross_x = ((hyperspace_planet.d - docked_planet.d) * 4 * GFX_SCALE) + GFX_X_CENTRE;
+			cross_y = ((hyperspace_planet.b - docked_planet.b) * 2 * GFX_SCALE) + GFX_Y_CENTRE;
+			cross_timer = 0;
+			planet_unknown = 0;
+			find_input = 0;
 			display_short_range_chart();
 		}
 	}
@@ -1275,9 +1249,6 @@ int main(void)
 		run_first_intro_screen();
 		run_second_intro_screen();
 
-		old_cross_x = -1;
-		old_cross_y = -1;
-
 		dock_player ();
 		display_commander_status ();
 		
@@ -1451,25 +1422,29 @@ int main(void)
 			if (current_screen == SCR_BREAK_PATTERN)
 				display_break_pattern();
 
-			if (cross_timer > 0)
+			if (current_screen == SCR_GALACTIC_CHART)
 			{
-				cross_timer--;
-				if (cross_timer == 0)
+				if (cross_timer > 0)
 				{
-    				show_distance_to_planet();
+					cross_timer--;
+					if (cross_timer == 0)
+					{
+						show_distance_to_planet();
+					}
 				}
+				display_galactic_chart();
 			}
-			
-			if ((cross_x != old_cross_x) ||
-				(cross_y != old_cross_y))
+			else if (current_screen == SCR_SHORT_RANGE)
 			{
-				if (old_cross_x != -1)
-					draw_cross (old_cross_x, old_cross_y);
-
-				old_cross_x = cross_x;
-				old_cross_y = cross_y;
-
-				draw_cross (old_cross_x, old_cross_y);
+				if (cross_timer > 0)
+				{
+					cross_timer--;
+					if (cross_timer == 0)
+					{
+						show_distance_to_planet();
+					}
+				}
+				display_short_range_chart();
 			}
 		}
 

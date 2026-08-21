@@ -20,5 +20,7 @@ void save_commander_screen (void);
 void load_commander_screen (void);
 void update_screen (void);
 
+extern int find_input;
+extern char find_name[20];
 
 #endif

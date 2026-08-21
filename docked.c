@@ -25,6 +25,7 @@
 #include "planet.h"
 #include "shipdata.h"
 #include "space.h"
+#include "main.h"
 
 
 
@@ -55,11 +56,28 @@ char *government_type[] = {	"Anarchy",
 
 int cross_x = 0;
 int cross_y = 0;
+int planet_unknown = 0;
 
 
-
-
-
+void draw_cross (int cx, int cy)
+{
+	if (current_screen == SCR_SHORT_RANGE)
+	{
+		gfx_set_clip_region (1, 37, 510, 339);
+		gfx_draw_colour_line (cx - 16, cy, cx + 16, cy, GFX_COL_RED);
+		gfx_draw_colour_line (cx, cy - 16, cx, cy + 16, GFX_COL_RED);
+		gfx_set_clip_region (1, 1, 510, 383);
+		return;
+	}
+	
+	if (current_screen == SCR_GALACTIC_CHART)
+	{
+		gfx_set_clip_region (1, 37, 510, 293);
+		gfx_draw_colour_line (cx - 8, cy, cx + 8, cy, GFX_COL_RED);
+		gfx_draw_colour_line (cx, cy - 8, cx, cy + 8, GFX_COL_RED);
+		gfx_set_clip_region (1, 1, 510, 383);
+	}
+}
 
 
 void draw_fuel_limit_circle (int cx, int cy)
@@ -127,8 +145,6 @@ void show_distance (int ypos, struct galaxy_seed from_planet, struct galaxy_seed
 void show_distance_to_planet (void)
 {
 	int px,py;
-	char planet_name[16];
-	char str[32];
 
 	if (current_screen == SCR_GALACTIC_CHART)
 	{
@@ -142,14 +158,7 @@ void show_distance_to_planet (void)
 	}
 
 	hyperspace_planet = find_planet (px, py);
-
-	name_planet (planet_name, hyperspace_planet);
-
-	gfx_clear_text_area();
-	sprintf (str, "%-18s", planet_name);
-	gfx_display_text (16, 340, str);
-
-	show_distance (356, docked_planet, hyperspace_planet);
+	planet_unknown = 0;
 
 	if (current_screen == SCR_GALACTIC_CHART)
 	{
@@ -166,6 +175,8 @@ void show_distance_to_planet (void)
 
 void move_cursor_to_origin (void)
 {
+	planet_unknown = 0;
+
 	if (current_screen == SCR_GALACTIC_CHART)
 	{
 		cross_x = docked_planet.d * GFX_SCALE;
@@ -187,7 +198,6 @@ void find_planet_by_name (char *find_name)
 	struct galaxy_seed glx;
 	char planet_name[16];
 	int found;
-	char str[32];
 	
 	glx = cmdr.galaxy;
 	found = 0;
@@ -210,18 +220,12 @@ void find_planet_by_name (char *find_name)
 
 	if (!found)
 	{
-		gfx_clear_text_area();
-		gfx_display_text (16, 340, "Unknown Planet");
+		planet_unknown = 1;
 		return;
 	}
 
+	planet_unknown = 0;
 	hyperspace_planet = glx;
-
-	gfx_clear_text_area ();
-	sprintf (str, "%-18s", planet_name);
-	gfx_display_text (16, 340, str);
-
-	show_distance (356, docked_planet, hyperspace_planet);
 
 	if (current_screen == SCR_GALACTIC_CHART)
 	{
@@ -247,6 +251,7 @@ void display_short_range_chart (void)
 	int row_used[64];
 	int row;
 	int blob_size;
+	char str[40];
 
 	current_screen = SCR_SHORT_RANGE;
 
@@ -328,8 +333,25 @@ void display_short_range_chart (void)
 		waggle_galaxy (&glx);
 	}
 
-	cross_x = ((hyperspace_planet.d - docked_planet.d) * 4 * GFX_SCALE) + GFX_X_CENTRE;
-	cross_y = ((hyperspace_planet.b - docked_planet.b) * 2 * GFX_SCALE) + GFX_Y_CENTRE;
+	if (find_input)
+	{
+		sprintf (str, "Planet Name? %s", find_name);
+		gfx_display_text (16, 340, str);
+	}
+	else if (planet_unknown)
+	{
+		gfx_display_text (16, 340, "Unknown Planet");
+	}
+	else
+	{
+		name_planet (planet_name, hyperspace_planet);
+		sprintf (str, "%-18s", planet_name);
+		gfx_display_text (16, 340, str);
+
+		show_distance (356, docked_planet, hyperspace_planet);
+	}
+
+	draw_cross (cross_x, cross_y);
 }
 
 
@@ -341,7 +363,7 @@ void display_galactic_chart (void)
 	struct galaxy_seed glx;
 	char str[64];
 	int px,py;
-	
+	char planet_name[16];
 
 	current_screen = SCR_GALACTIC_CHART;
 
@@ -376,9 +398,25 @@ void display_galactic_chart (void)
 
 	}
 
+	if (find_input)
+	{
+		sprintf (str, "Planet Name? %s", find_name);
+		gfx_display_text (16, 340, str);
+	}
+	else if (planet_unknown)
+	{
+		gfx_display_text (16, 340, "Unknown Planet");
+	}
+	else
+	{
+		name_planet (planet_name, hyperspace_planet);
+		sprintf (str, "%-18s", planet_name);
+		gfx_display_text (16, 340, str);
 
-	cross_x = hyperspace_planet.d * GFX_SCALE;
-	cross_y = (hyperspace_planet.b / (2 / GFX_SCALE)) + (18 * GFX_SCALE) + 1;
+		show_distance (356, docked_planet, hyperspace_planet);
+	}
+
+	draw_cross (cross_x, cross_y);
 }
 
 
