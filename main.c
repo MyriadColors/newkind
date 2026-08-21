@@ -404,6 +404,13 @@ void d_pressed (void)
 		case SCR_REAR_VIEW:
 		case SCR_RIGHT_VIEW:
 		case SCR_LEFT_VIEW:
+			if (kbd_shift_down && can_fast_dock && !docked)
+			{
+				snd_play_sample (SND_DOCK);
+				dock_player();
+				current_screen = SCR_BREAK_PATTERN;
+				break;
+			}
 			if (auto_pilot)
 				disengage_auto_pilot();
 			break;
@@ -1391,6 +1398,8 @@ int main(void)
 
 				if (message_count > 0)
 					gfx_display_centre_text (358, message_string, 120, GFX_COL_WHITE);
+				else if (can_fast_dock)
+					gfx_display_centre_text (358, "PRESS SHIFT-D TO DOCK", 120, GFX_COL_GOLD);
 					
 				if (hyper_ready)
 				{

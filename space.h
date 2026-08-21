@@ -90,5 +90,7 @@ void launch_player (void);
 
 void engage_docking_computer (void);
 
+extern int can_fast_dock;
+
 #endif
 

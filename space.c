@@ -56,6 +56,7 @@ int hyper_countdown;
 char hyper_name[16];
 int hyper_distance;
 int hyper_galactic;
+int can_fast_dock = 0;
 
 
 
@@ -490,23 +491,10 @@ void make_station_appear (void)
 
 void check_docking (int i)
 {
-	if (is_docking(i))
-	{
-		snd_play_sample (SND_DOCK);					
-		dock_player();
-		current_screen = SCR_BREAK_PATTERN;
-		return;
-	}
-					
-	if (flight_speed >= 5)
-	{
-		do_game_over();
-		return;
-	}
-
-	flight_speed = 1;
-	damage_ship (5, universe[i].location.z > 0);
-	snd_play_sample (SND_CRASH);
+	(void)i;
+	snd_play_sample (SND_DOCK);
+	dock_player();
+	current_screen = SCR_BREAK_PATTERN;
 }
 
 
@@ -594,6 +582,7 @@ void update_universe (void)
 	
 	
 	gfx_start_render();
+	can_fast_dock = 0;
 				 	
 	for (i = 0; i < MAX_UNIV_OBJECTS; i++)
 	{
@@ -660,6 +649,12 @@ void update_universe (void)
 				continue;
 			}
 			
+			
+			if ((type == SHIP_CORIOLIS) || (type == SHIP_DODEC))
+			{
+				if (universe[i].distance < 2000)
+					can_fast_dock = 1;
+			}
 			
 			if (universe[i].distance < 170)
 			{
