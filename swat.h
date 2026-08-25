@@ -42,7 +42,7 @@ void explode_object (int un);
 void abandon_ship (void);
 void create_thargoid (void);
 void dock_it (struct univ_object *ship);
-
-
+int get_active_tactical_target (void);
+int calculate_lead_reticle (int target_un, int *lead_sx, int *lead_sy);
 
 #endif

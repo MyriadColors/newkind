@@ -29,5 +29,9 @@ void select_right_setting (void);
 void select_up_setting (void);
 void select_down_setting (void);
 void toggle_setting (void);
+void cycle_setting_backwards (void);
+
+void handle_options_mouse_input (void);
+void handle_settings_mouse_input (void);
 
 #endif

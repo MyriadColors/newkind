@@ -130,6 +130,7 @@ typedef struct config_state
 	int aspect_ratio_mode;
 	int scaling_filter;
 	int display_mode;
+	int tactical_hud;
 	char scanner_filename[256];
 	int scanner_cx;
 	int scanner_cy;

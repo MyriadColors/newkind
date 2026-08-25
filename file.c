@@ -61,6 +61,8 @@ void write_config_file (void)
 
 	fprintf (fp, "%d\t\t# Display mode: 0 = Maximized, 1 = Fullscreen, 2 = 800x600, 3 = 1024x768, 4 = 1280x720, 5 = 1920x1080\n", cfg->display_mode);
 
+	fprintf (fp, "%d\t\t# Tactical HUD: 0 = Off, 1 = Standard, 2 = Full\n", cfg->tactical_hud);
+
 	fprintf (fp, "newscan.cfg\t# Name of scanner config file to use.\n");
 
 	fclose (fp);
@@ -190,6 +192,7 @@ void read_config_file (void)
 			else if (extra_idx == 5) sscanf (str, "%d", &cfg->aspect_ratio_mode);
 			else if (extra_idx == 6) sscanf (str, "%d", &cfg->scaling_filter);
 			else if (extra_idx == 7) sscanf (str, "%d", &cfg->display_mode);
+			else if (extra_idx == 8) sscanf (str, "%d", &cfg->tactical_hud);
 			extra_idx++;
 		}
 	}

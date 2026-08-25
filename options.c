@@ -26,13 +26,14 @@
 #include "main.h"
 #include "docked.h"
 #include "file.h" 
+#include "keyboard.h"
 
 #include "game_state.h"
 
 static int hilite_item;
  
 #define NUM_OPTIONS 4
-#define NUM_SETTINGS 14
+#define NUM_SETTINGS 15
 
 #define OPTION_BAR_WIDTH	(400)
 #define OPTION_BAR_HEIGHT	(15)
@@ -72,6 +73,7 @@ static const struct setting setting_list[NUM_SETTINGS] =
 	{"Display Mode:",	{"Maximized", "Fullscreen", "800x600", "1024x768", "1280x720", "1920x1080"}},
 	{"Aspect Ratio:",	{"1:1 Square", "4:3 Retro", "16:9 Wide", "Integer", "Stretch", ""}},
 	{"Filter:",			{"Point", "Bilinear", "", "", "", ""}},
+	{"Tactical HUD:",	{"Off", "Standard", "Full", "", "", ""}},
 	{"Save Settings",	{"", "", "", "", "", ""}}
 };
 
@@ -156,6 +158,10 @@ void display_setting_item (int item)
 
 		case 12:
 			v = cfg->scaling_filter;
+			break;
+
+		case 13:
+			v = cfg->tactical_hud;
 			break;
 
 		default:
@@ -318,10 +324,125 @@ void toggle_setting (void)
 		case 12:
 			cfg->scaling_filter = (cfg->scaling_filter + 1) % 2;
 			break;
+
+		case 13:
+			cfg->tactical_hud = (cfg->tactical_hud + 1) % 3;
+			break;
 	}
 
 	highlight_setting (hilite_item);
 }
+
+void cycle_setting_backwards (void)
+{
+	ConfigState *cfg = get_config_state();
+
+	if (hilite_item == (NUM_SETTINGS - 1))
+	{
+		write_config_file();
+		display_options();
+		return;
+	}
+
+	switch (hilite_item)
+	{
+		case 0:
+			cfg->wireframe ^= 1;
+			break;
+		
+		case 1:
+			cfg->anti_alias_gfx ^= 1;
+			break;
+		
+		case 2:
+			cfg->planet_render_style = (cfg->planet_render_style + 3) % 4;
+			break;
+		
+		case 3:
+			cfg->hoopy_casinos ^= 1;
+			break;
+
+		case 4:
+			cfg->instant_dock ^= 1;
+			break;
+
+		case 5:
+			cfg->control_scheme ^= 1;
+			break;
+
+		case 6:
+			cfg->mouse_flight_mode = (cfg->mouse_flight_mode + 2) % 3;
+			break;
+
+		case 7:
+			cfg->invert_pitch ^= 1;
+			break;
+
+		case 8:
+			cfg->mouse_sensitivity = (cfg->mouse_sensitivity + 2) % 3;
+			break;
+
+		case 9:
+			cfg->flight_assist ^= 1;
+			break;
+
+		case 10:
+			cfg->display_mode = (cfg->display_mode + 5) % 6;
+			gfx_apply_display_mode(cfg->display_mode);
+			break;
+
+		case 11:
+			cfg->aspect_ratio_mode = (cfg->aspect_ratio_mode + 4) % 5;
+			break;
+
+		case 12:
+			cfg->scaling_filter = (cfg->scaling_filter + 1) % 2;
+			break;
+
+		case 13:
+			cfg->tactical_hud = (cfg->tactical_hud + 2) % 3;
+			break;
+	}
+
+	highlight_setting (hilite_item);
+}
+
+void handle_settings_mouse_input (void)
+{
+	if (get_session_state()->current_screen != SCR_SETTINGS)
+		return;
+
+	for (int i = 0; i < NUM_SETTINGS; i++)
+	{
+		int x, y, w;
+		if (i == (NUM_SETTINGS - 1))
+		{
+			x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
+			y = 265;
+			w = OPTION_BAR_WIDTH;
+		}
+		else
+		{
+			x = (i & 1) * 250 + 32;
+			y = (i / 2) * 26 + 65;
+			w = 235;
+		}
+
+		if (mouse_x >= x && mouse_x <= x + w &&
+			mouse_y >= y && mouse_y <= y + OPTION_BAR_HEIGHT + 2)
+		{
+			if (hilite_item != i)
+				highlight_setting(i);
+
+			if (mouse_left_pressed)
+				toggle_setting();
+			else if (mouse_right_pressed)
+				cycle_setting_backwards();
+			break;
+		}
+	}
+}
+
 
 
 void game_settings_screen (void)
@@ -341,6 +462,7 @@ void game_settings_screen (void)
 
 	hilite_item = -1;
 	highlight_setting (0);
+	draw_docked_quicknav_bar ();
 }
 
 
@@ -441,4 +563,28 @@ void display_options (void)
 
 	hilite_item = -1;
 	highlight_option (0);
+	draw_docked_quicknav_bar ();
+}
+
+void handle_options_mouse_input (void)
+{
+	if (get_session_state()->current_screen != SCR_OPTIONS)
+		return;
+
+	for (int i = 0; i < NUM_OPTIONS; i++)
+	{
+		int x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
+		int y = (384 - (30 * NUM_OPTIONS)) / 2 + i * 30;
+
+		if (mouse_x >= x && mouse_x <= x + OPTION_BAR_WIDTH &&
+			mouse_y >= y && mouse_y <= y + OPTION_BAR_HEIGHT)
+		{
+			if (hilite_item != i)
+				highlight_option(i);
+
+			if (mouse_left_pressed)
+				do_option();
+			break;
+		}
+	}
 }

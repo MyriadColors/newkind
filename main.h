@@ -25,5 +25,6 @@ void update_screen (void);
 
 extern bool find_input;
 extern char find_name[20];
+extern int cross_timer;
 
 #endif

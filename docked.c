@@ -14,6 +14,7 @@
 
 
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -29,6 +30,7 @@
 #include "keyboard.h"
 #include "docked.h"
 #include "game_state.h"
+#include "options.h"
 
 #define cmdr (get_player_state()->current)
 #define saved_cmdr (get_player_state()->saved)
@@ -462,6 +464,7 @@ void display_short_range_chart (void)
 	}
 
 	draw_cross (cross_x, cross_y);
+	draw_docked_quicknav_bar ();
 }
 
 
@@ -574,6 +577,7 @@ void display_galactic_chart (void)
 	}
 
 	draw_cross (cross_x, cross_y);
+	draw_docked_quicknav_bar ();
 }
 
 
@@ -630,6 +634,7 @@ void display_data_on_planet (void)
 
 	description = describe_planet (hyperspace_planet);
 	gfx_display_pretty_text (16, 298, 400, 384, description);
+	draw_docked_quicknav_bar ();
 }
 
 
@@ -890,6 +895,7 @@ void display_commander_status (void)
 		sprintf (str, "Right %s Laser", laser_type(cmdr.right_laser));
 		gfx_display_text (x, y, str);
 	}
+	draw_docked_quicknav_bar ();
 }
 
 
@@ -1004,6 +1010,34 @@ void buy_stock (void)
 	highlight_stock (hilite_item);
 }
 
+void buy_max_stock (void)
+{
+	struct stock_item *item;
+	int cargo_held;
+	int bought = 0;
+	
+	if (!docked)
+		return;
+
+	item = &stock_market[hilite_item];
+	if ((item->current_quantity == 0) || (cmdr.credits < item->current_price))
+		return;
+
+	while ((item->current_quantity > 0) && (cmdr.credits >= item->current_price))
+	{
+		cargo_held = total_cargo();
+		if ((item->units == TONNES) && (cargo_held >= cmdr.cargo_capacity))
+			break;
+
+		cmdr.current_cargo[hilite_item]++;
+		item->current_quantity--;
+		cmdr.credits -= item->current_price;
+		bought++;
+	}
+
+	if (bought > 0)
+		highlight_stock (hilite_item);
+}
 
 void sell_stock (void)
 {
@@ -1021,7 +1055,66 @@ void sell_stock (void)
 	highlight_stock (hilite_item);
 }
 
+void sell_all_stock (void)
+{
+	struct stock_item *item;
+	int sold = 0;
+	
+	if ((!docked) || (cmdr.current_cargo[hilite_item] == 0))
+		return;
 
+	item = &stock_market[hilite_item];
+
+	while (cmdr.current_cargo[hilite_item] > 0)
+	{
+		cmdr.current_cargo[hilite_item]--;
+		item->current_quantity++;
+		cmdr.credits += item->current_price;
+		sold++;
+	}
+
+	if (sold > 0)
+		highlight_stock (hilite_item);
+}
+
+void handle_market_mouse_input (void)
+{
+	if ((current_screen != SCR_MARKET_PRICES) || (!docked))
+		return;
+
+	if (mouse_x >= 2 && mouse_x <= 510 && mouse_y >= 55 && mouse_y < (55 + 17 * 15))
+	{
+		int row = (mouse_y - 55) / 15;
+		if (row >= 0 && row < 17)
+		{
+			if (hilite_item != row)
+				highlight_stock (row);
+
+			if (mouse_left_pressed)
+			{
+				if (kbd_shift_down)
+					buy_max_stock();
+				else
+					buy_stock();
+			}
+			else if (mouse_right_pressed)
+			{
+				if (kbd_shift_down)
+					sell_all_stock();
+				else
+					sell_stock();
+			}
+			else if (mouse_wheel_delta > 0.05f)
+			{
+				buy_stock();
+			}
+			else if (mouse_wheel_delta < -0.05f)
+			{
+				sell_stock();
+			}
+		}
+	}
+}
 
 void display_market_prices (void)
 {
@@ -1054,6 +1147,8 @@ void display_market_prices (void)
 	{
 		hilite_item = -1;
 		highlight_stock (0);
+		gfx_display_colour_text (16, 362, "[L-Click] Buy  [R-Click] Sell  [Wheel] +/-  [Shift+Click] Max/All", GFX_COL_GREY_1);
+		draw_docked_quicknav_bar ();
 	}
 }
 
@@ -1092,6 +1187,7 @@ void display_inventory (void)
 			y += 16;
 		}		
 	}
+	draw_docked_quicknav_bar ();
 }
 
 /***********************************************************************************/
@@ -1574,4 +1670,173 @@ void equip_ship (void)
 	hilite_item = 0;
 	
 	list_equip_prices();
+	draw_docked_quicknav_bar ();
+}
+
+void handle_equip_mouse_input (void)
+{
+	if ((current_screen != SCR_EQUIP_SHIP) || (!docked))
+		return;
+
+	if (mouse_x >= 2 && mouse_x <= 510)
+	{
+		for (int i = 0; i < NO_OF_EQUIP_ITEMS; i++)
+		{
+			if (equip_stock[i].y != 0)
+			{
+				if (mouse_y >= equip_stock[i].y && mouse_y < (equip_stock[i].y + 15))
+				{
+					if (hilite_item != i)
+						highlight_equip (i);
+
+					if (mouse_left_pressed)
+						buy_equip();
+					break;
+				}
+			}
+		}
+	}
+}
+
+struct quicknav_tab
+{
+	char *label;
+	int screen_id;
+	int x;
+	int w;
+};
+
+static struct quicknav_tab nav_tabs[9] = {
+	{"LAUNCH", SCR_FRONT_VIEW,     4, 52},
+	{"EQUIP",  SCR_EQUIP_SHIP,    60, 52},
+	{"GALAXY", SCR_GALACTIC_CHART, 116, 52},
+	{"LOCAL",  SCR_SHORT_RANGE,   172, 52},
+	{"INFO",   SCR_PLANET_DATA,   228, 52},
+	{"MARKET", SCR_MARKET_PRICES, 284, 52},
+	{"STATUS", SCR_CMDR_STATUS,   340, 52},
+	{"CARGO",  SCR_INVENTORY,     396, 52},
+	{"OPTS",   SCR_OPTIONS,       452, 56}
+};
+
+void draw_docked_quicknav_bar (void)
+{
+	if (!docked)
+		return;
+
+	for (int i = 0; i < 9; i++)
+	{
+		int is_active = (current_screen == nav_tabs[i].screen_id) ||
+		                ((nav_tabs[i].screen_id == SCR_OPTIONS) && (current_screen == SCR_SETTINGS));
+		int is_hovered = (mouse_x >= nav_tabs[i].x && mouse_x <= nav_tabs[i].x + nav_tabs[i].w &&
+		                  mouse_y >= 22 && mouse_y <= 34);
+
+		int bg_col = is_active ? GFX_COL_DARK_RED : (is_hovered ? GFX_COL_GREY_3 : GFX_COL_BLACK);
+		int text_col = is_active ? GFX_COL_GOLD : (is_hovered ? GFX_COL_WHITE : GFX_COL_GREY_1);
+
+		gfx_draw_rectangle (nav_tabs[i].x, 22, nav_tabs[i].x + nav_tabs[i].w, 34, bg_col);
+		gfx_draw_colour_line (nav_tabs[i].x, 22, nav_tabs[i].x + nav_tabs[i].w, 22, GFX_COL_GREY_2);
+		gfx_draw_colour_line (nav_tabs[i].x, 34, nav_tabs[i].x + nav_tabs[i].w, 34, GFX_COL_GREY_2);
+		gfx_draw_colour_line (nav_tabs[i].x, 22, nav_tabs[i].x, 34, GFX_COL_GREY_2);
+		gfx_draw_colour_line (nav_tabs[i].x + nav_tabs[i].w, 22, nav_tabs[i].x + nav_tabs[i].w, 34, GFX_COL_GREY_2);
+
+		int text_offset_x = nav_tabs[i].x + (nav_tabs[i].w - (int)strlen(nav_tabs[i].label) * 8) / 2;
+		gfx_display_colour_text (text_offset_x, 24, nav_tabs[i].label, text_col);
+	}
+}
+
+int handle_quicknav_mouse_input (void)
+{
+	if (!docked || !mouse_left_pressed)
+		return 0;
+
+	if (mouse_y < 20 || mouse_y > 36)
+		return 0;
+
+	for (int i = 0; i < 9; i++)
+	{
+		if (mouse_x >= nav_tabs[i].x && mouse_x <= nav_tabs[i].x + nav_tabs[i].w)
+		{
+			switch (i)
+			{
+				case 0: /* LAUNCH */
+					launch_player();
+					return 1;
+
+				case 1: /* EQUIP */
+					if (current_screen != SCR_EQUIP_SHIP)
+					{
+						current_screen = SCR_EQUIP_SHIP;
+						equip_ship();
+					}
+					return 1;
+
+				case 2: /* GALAXY */
+					if (current_screen != SCR_GALACTIC_CHART)
+					{
+						current_screen = SCR_GALACTIC_CHART;
+						cross_x = hyperspace_planet.d * GFX_SCALE;
+						cross_y = (hyperspace_planet.b / (2 / GFX_SCALE)) + (18 * GFX_SCALE) + 1;
+						cross_timer = 0;
+						planet_unknown = 0;
+						find_input = 0;
+						display_galactic_chart();
+					}
+					return 1;
+
+				case 3: /* LOCAL */
+					if (current_screen != SCR_SHORT_RANGE)
+					{
+						current_screen = SCR_SHORT_RANGE;
+						cross_x = ((hyperspace_planet.d - docked_planet.d) * 4 * GFX_SCALE) + GFX_X_CENTRE;
+						cross_y = ((hyperspace_planet.b - docked_planet.b) * 2 * GFX_SCALE) + GFX_Y_CENTRE;
+						cross_timer = 0;
+						planet_unknown = 0;
+						find_input = 0;
+						display_short_range_chart();
+					}
+					return 1;
+
+				case 4: /* INFO */
+					if (current_screen != SCR_PLANET_DATA)
+					{
+						current_screen = SCR_PLANET_DATA;
+						display_data_on_planet();
+					}
+					return 1;
+
+				case 5: /* MARKET */
+					if (current_screen != SCR_MARKET_PRICES)
+					{
+						current_screen = SCR_MARKET_PRICES;
+						display_market_prices();
+					}
+					return 1;
+
+				case 6: /* STATUS */
+					if (current_screen != SCR_CMDR_STATUS)
+					{
+						current_screen = SCR_CMDR_STATUS;
+						display_commander_status();
+					}
+					return 1;
+
+				case 7: /* CARGO */
+					if (current_screen != SCR_INVENTORY)
+					{
+						current_screen = SCR_INVENTORY;
+						display_inventory();
+					}
+					return 1;
+
+				case 8: /* OPTS */
+					if (current_screen != SCR_OPTIONS && current_screen != SCR_SETTINGS)
+					{
+						display_options();
+					}
+					return 1;
+			}
+		}
+	}
+
+	return 0;
 }

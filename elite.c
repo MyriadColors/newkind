@@ -18,7 +18,6 @@
 #include "elite.h"
 #include "vector.h"
 #include "planet.h"
-#include "shipdata.h"
 #include "game_state.h"
 
 struct ship_data *ship_list[NO_OF_SHIPS + 1] =

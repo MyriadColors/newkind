@@ -16,6 +16,7 @@
 #define control_scheme (get_config_state()->control_scheme)
 #define mouse_flight_mode (get_config_state()->mouse_flight_mode)
 #define current_screen (get_session_state()->current_screen)
+#define docked (get_session_state()->is_docked)
 
 int kbd_F1_pressed = 0;
 int kbd_F2_pressed = 0;
@@ -226,8 +227,18 @@ void kbd_poll_keyboard(void)
 
 	if (IsWindowFocused())
 	{
-		if (!IsCursorHidden())
-			DisableCursor();
+		int in_flight = (!docked) && (current_screen == SCR_FRONT_VIEW || current_screen == SCR_REAR_VIEW ||
+		                              current_screen == SCR_LEFT_VIEW || current_screen == SCR_RIGHT_VIEW);
+		if (in_flight && control_scheme == 1 && mouse_flight_mode == 0)
+		{
+			if (!IsCursorHidden())
+				DisableCursor();
+		}
+		else
+		{
+			if (IsCursorHidden())
+				EnableCursor();
+		}
 	}
 	else
 	{

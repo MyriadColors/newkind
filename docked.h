@@ -31,12 +31,18 @@ void select_previous_stock (void);
 void select_next_stock (void);
 void buy_stock (void);
 void sell_stock (void);
+void buy_max_stock (void);
+void sell_all_stock (void);
+void handle_market_mouse_input (void);
 void display_inventory (void);
 void equip_ship (void);
 void select_next_equip (void);
 void select_previous_equip (void);
 void buy_equip (void);
+void handle_equip_mouse_input (void);
 
+void draw_docked_quicknav_bar (void);
+int handle_quicknav_mouse_input (void);
 
 extern int cross_x;
 extern int cross_y;

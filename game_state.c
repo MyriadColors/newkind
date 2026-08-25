@@ -25,6 +25,7 @@ GameState g_state = {
 		.aspect_ratio_mode = 0,   /* 0 = 1:1 Square, 1 = 4:3 Retro, 2 = 16:9 Wide, 3 = Integer, 4 = Stretch */
 		.scaling_filter = 0,      /* 0 = Point (Crisp), 1 = Bilinear (Smooth) */
 		.display_mode = 0,        /* 0 = Maximized, 1 = Fullscreen, 2 = 800x600, etc. */
+		.tactical_hud = 1,        /* 0 = Off, 1 = Standard, 2 = Full */
 		.scanner_filename = "scanner.bmp",
 		.scanner_cx = 256,
 		.scanner_cy = 385 + 23,

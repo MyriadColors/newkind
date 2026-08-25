@@ -84,6 +84,8 @@
 #define mouse_sensitivity (get_config_state()->mouse_sensitivity)
 #define flight_assist (get_config_state()->flight_assist)
 #define invert_pitch (get_config_state()->invert_pitch)
+#define tactical_hud (get_config_state()->tactical_hud)
+#define control_scheme (get_config_state()->control_scheme)
 
 struct galaxy_seed destination_planet;
 int hyper_countdown;
@@ -1380,6 +1382,162 @@ void engage_docking_computer (void)
 		snd_play_sample (SND_DOCK);					
 		dock_player();
 		current_screen = SCR_BREAK_PATTERN;
+	}
+}
+
+void draw_tactical_hud (void)
+{
+	if (tactical_hud == 0 || docked)
+		return;
+
+	if (current_screen != SCR_FRONT_VIEW && current_screen != SCR_REAR_VIEW &&
+		current_screen != SCR_LEFT_VIEW && current_screen != SCR_RIGHT_VIEW)
+		return;
+
+	int tgt_idx = get_active_tactical_target();
+	if (tgt_idx < 0 || tgt_idx >= MAX_UNIV_OBJECTS)
+		return;
+
+	struct univ_object *tgt = &universe[tgt_idx];
+	if (tgt->type <= 0 || tgt->type > NO_OF_SHIPS || ship_list[tgt->type] == NULL)
+		return;
+
+	struct ship_data *ship = ship_list[tgt->type];
+
+	/* 1. Target Information Card (Top Right, x = 320..504, y = 8..46) */
+	int card_x = 320;
+	int card_y = 8;
+	int card_w = 184;
+	int card_h = 38;
+
+	gfx_draw_rectangle (card_x, card_y, card_x + card_w, card_y + card_h, GFX_COL_BLACK);
+	gfx_draw_colour_line (card_x, card_y, card_x + card_w, card_y, GFX_COL_GREY_3);
+	gfx_draw_colour_line (card_x, card_y + card_h, card_x + card_w, card_y + card_h, GFX_COL_GREY_3);
+	gfx_draw_colour_line (card_x, card_y, card_x, card_y + card_h, GFX_COL_GREY_3);
+	gfx_draw_colour_line (card_x + card_w, card_y, card_x + card_w, card_y + card_h, GFX_COL_GREY_3);
+
+	char name_buf[32];
+	strncpy (name_buf, ship->name, sizeof(name_buf) - 1);
+	name_buf[sizeof(name_buf) - 1] = '\0';
+
+	int tag_col = GFX_COL_GREEN_1;
+	char *tag_str = "[NEUTRAL]";
+	if (tgt->flags & FLG_POLICE)
+	{
+		tag_col = GFX_COL_CYAN;
+		tag_str = "[POLICE]";
+	}
+	else if (tgt->flags & (FLG_ANGRY | FLG_FIRING | FLG_HOSTILE))
+	{
+		tag_col = GFX_COL_RED;
+		tag_str = "[HOSTILE]";
+	}
+	else if (ship->scoop_type != 0)
+	{
+		tag_col = GFX_COL_GREEN_2;
+		tag_str = "[CARGO]";
+	}
+	else if (missile_target == tgt_idx)
+	{
+		tag_col = GFX_COL_YELLOW_1;
+		tag_str = "[LOCKED]";
+	}
+
+	gfx_display_colour_text (card_x + 6, card_y + 4, name_buf, GFX_COL_GOLD);
+	gfx_display_colour_text (card_x + 116, card_y + 4, tag_str, tag_col);
+
+	char dist_buf[32];
+	if (tgt->distance < 1000)
+		sprintf (dist_buf, "%d M", tgt->distance);
+	else
+		sprintf (dist_buf, "%d.%d KM", tgt->distance / 1000, (tgt->distance % 1000) / 100);
+
+	gfx_display_colour_text (card_x + 6, card_y + 20, dist_buf, GFX_COL_WHITE);
+
+	int max_eng = ship->energy;
+	if (max_eng <= 0) max_eng = 100;
+	int cur_eng = tgt->energy;
+	if (cur_eng < 0) cur_eng = 0;
+	if (cur_eng > max_eng) cur_eng = max_eng;
+	int pct = (cur_eng * 100) / max_eng;
+
+	int bar_x = card_x + 80;
+	int bar_y = card_y + 21;
+	int bar_w = 96;
+	int bar_h = 8;
+	gfx_draw_rectangle (bar_x, bar_y, bar_x + bar_w, bar_y + bar_h, GFX_COL_GREY_4);
+
+	int fill_w = (pct * (bar_w - 2)) / 100;
+	if (fill_w > 0)
+	{
+		int bar_col = (pct > 50) ? GFX_COL_GREEN_2 : ((pct > 20) ? GFX_COL_YELLOW_1 : GFX_COL_RED);
+		gfx_draw_rectangle (bar_x + 1, bar_y + 1, bar_x + 1 + fill_w, bar_y + bar_h - 1, bar_col);
+	}
+
+	/* 2. Target Screen-Space Corner Brackets & Predictive Lead (Front View Only) */
+	if (current_screen == SCR_FRONT_VIEW && tgt->location.z > 80.0)
+	{
+		double rx = tgt->location.x;
+		double ry = tgt->location.y;
+		double rz = tgt->location.z;
+
+		int sx = (int)((rx * 512.0) / rz + 256.0);
+		int sy = (int)(-(ry * 512.0) / rz + 192.0);
+
+		if (sx >= 10 && sx <= 502 && sy >= 10 && sy <= 374)
+		{
+			int bsize = (int)((ship->size * 512.0) / rz);
+			if (bsize < 8) bsize = 8;
+			if (bsize > 48) bsize = 48;
+
+			int brk_col = (tgt->flags & (FLG_ANGRY | FLG_FIRING | FLG_HOSTILE)) ? GFX_COL_RED :
+			              ((missile_target == tgt_idx) ? GFX_COL_YELLOW_1 : GFX_COL_CYAN);
+
+			int blen = bsize / 3;
+			if (blen < 3) blen = 3;
+
+			/* Top-Left Corner */
+			gfx_draw_colour_line (sx - bsize, sy - bsize, sx - bsize + blen, sy - bsize, brk_col);
+			gfx_draw_colour_line (sx - bsize, sy - bsize, sx - bsize, sy - bsize + blen, brk_col);
+
+			/* Top-Right Corner */
+			gfx_draw_colour_line (sx + bsize, sy - bsize, sx + bsize - blen, sy - bsize, brk_col);
+			gfx_draw_colour_line (sx + bsize, sy - bsize, sx + bsize, sy - bsize + blen, brk_col);
+
+			/* Bottom-Left Corner */
+			gfx_draw_colour_line (sx - bsize, sy + bsize, sx - bsize + blen, sy + bsize, brk_col);
+			gfx_draw_colour_line (sx - bsize, sy + bsize, sx - bsize, sy + bsize - blen, brk_col);
+
+			/* Bottom-Right Corner */
+			gfx_draw_colour_line (sx + bsize, sy + bsize, sx + bsize - blen, sy + bsize, brk_col);
+			gfx_draw_colour_line (sx + bsize, sy + bsize, sx + bsize, sy + bsize - blen, brk_col);
+
+			/* Predictive Lead Reticle */
+			if (tactical_hud >= 2 || control_scheme == 1)
+			{
+				int lsx = 0, lsy = 0;
+				if (calculate_lead_reticle (tgt_idx, &lsx, &lsy))
+				{
+					gfx_draw_colour_line (lsx - 3, lsy, lsx, lsy - 3, GFX_COL_CYAN);
+					gfx_draw_colour_line (lsx, lsy - 3, lsx + 3, lsy, GFX_COL_CYAN);
+					gfx_draw_colour_line (lsx + 3, lsy, lsx, lsy + 3, GFX_COL_CYAN);
+					gfx_draw_colour_line (lsx, lsy + 3, lsx - 3, lsy, GFX_COL_CYAN);
+				}
+			}
+		}
+
+		/* 3. Cargo / Mineral Scoop Alignment Guide */
+		if (cmdr.fuel_scoop && ship->scoop_type != 0 && tgt->location.z > 0 && tgt->location.z < 2500.0)
+		{
+			if (fabs(rx) < 140.0 && ry < 20.0 && ry > -180.0)
+			{
+				gfx_display_centre_text (348, "[SCOOP ALIGNED]", 120, GFX_COL_GREEN_2);
+			}
+			else if (ry >= 20.0)
+			{
+				gfx_display_centre_text (348, "[SCOOP: PITCH UP]", 120, GFX_COL_YELLOW_1);
+			}
+		}
 	}
 }
 

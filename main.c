@@ -242,6 +242,8 @@ void draw_laser_sights(void)
 		gfx_draw_colour_line (mouse_x - 4, mouse_y, mouse_x + 4, mouse_y, GFX_COL_CYAN);
 		gfx_draw_colour_line (mouse_x, mouse_y - 4, mouse_x, mouse_y + 4, GFX_COL_CYAN);
 	}
+
+	draw_tactical_hud();
 }
 
 void arrow_right(void)
@@ -593,9 +595,31 @@ void handle_flight_keys (void)
 		return;
 	}
 
+	if (docked)
+	{
+		if (handle_quicknav_mouse_input())
+			return;
+	}
+
 	if (current_screen == SCR_GALACTIC_CHART || current_screen == SCR_SHORT_RANGE)
 	{
 		handle_chart_mouse_input();
+	}
+	else if (current_screen == SCR_MARKET_PRICES)
+	{
+		handle_market_mouse_input();
+	}
+	else if (current_screen == SCR_EQUIP_SHIP)
+	{
+		handle_equip_mouse_input();
+	}
+	else if (current_screen == SCR_OPTIONS)
+	{
+		handle_options_mouse_input();
+	}
+	else if (current_screen == SCR_SETTINGS)
+	{
+		handle_settings_mouse_input();
 	}
 
 	if (kbd_F1_pressed)

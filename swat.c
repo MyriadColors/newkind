@@ -1266,3 +1266,79 @@ void abandon_ship (void)
 	current_screen = SCR_BREAK_PATTERN;
 }
 
+int get_active_tactical_target (void)
+{
+	if (missile_target >= 0 && universe[missile_target].type != 0 && !(universe[missile_target].flags & FLG_DEAD))
+		return missile_target;
+
+	int best_target = -1;
+	double best_score = 1e9;
+
+	for (int i = 0; i < MAX_UNIV_OBJECTS; i++)
+	{
+		if (universe[i].type <= 0 || universe[i].type == SHIP_PLANET || universe[i].type == SHIP_SUN)
+			continue;
+
+		if (universe[i].flags & FLG_DEAD)
+			continue;
+
+		if (universe[i].location.z <= 100.0)
+			continue;
+
+		double rx = universe[i].location.x;
+		double ry = universe[i].location.y;
+		double rz = universe[i].location.z;
+
+		double sx = (rx * 512.0) / rz;
+		double sy = -(ry * 512.0) / rz;
+
+		double sight_dist = sqrt(sx * sx + sy * sy);
+		if (sight_dist > 180.0)
+			continue;
+
+		double score = sight_dist * 2.0 + (rz / 1000.0);
+		if (score < best_score)
+		{
+			best_score = score;
+			best_target = i;
+		}
+	}
+
+	return best_target;
+}
+
+int calculate_lead_reticle (int target_un, int *lead_sx, int *lead_sy)
+{
+	if (target_un < 0 || target_un >= MAX_UNIV_OBJECTS)
+		return 0;
+
+	struct univ_object *tgt = &universe[target_un];
+	if (tgt->type <= 0 || (tgt->flags & FLG_DEAD) || tgt->location.z <= 100.0)
+		return 0;
+
+	double tgt_vx = tgt->rotmat[2].x * tgt->velocity;
+	double tgt_vy = tgt->rotmat[2].y * tgt->velocity;
+	double tgt_vz = tgt->rotmat[2].z * tgt->velocity - flight_speed;
+
+	double time_to_target = tgt->location.z / 60.0;
+	if (time_to_target > 4.0) time_to_target = 4.0;
+	if (time_to_target < 0.1) time_to_target = 0.1;
+
+	double pred_x = tgt->location.x + tgt_vx * time_to_target;
+	double pred_y = tgt->location.y + tgt_vy * time_to_target;
+	double pred_z = tgt->location.z + tgt_vz * time_to_target;
+
+	if (pred_z <= 50.0)
+		return 0;
+
+	int sx = (int)((pred_x * 512.0) / pred_z + 256.0);
+	int sy = (int)(-(pred_y * 512.0) / pred_z + 192.0);
+
+	if (sx < 10 || sx > 502 || sy < 10 || sy > 374)
+		return 0;
+
+	if (lead_sx) *lead_sx = sx;
+	if (lead_sy) *lead_sy = sy;
+	return 1;
+}
+
