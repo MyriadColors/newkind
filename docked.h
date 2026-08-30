@@ -20,7 +20,7 @@ void display_galactic_chart (void);
 void display_data_on_planet (void);
 void show_distance_to_planet (void);
 void move_cursor_to_origin (void);
-void find_planet_by_name (const char *find_name);
+void find_planet_by_name (const char *target_name);
 void draw_cross (int cx, int cy);
 void handle_chart_mouse_input (void);
 void display_market_prices (void);
@@ -44,9 +44,11 @@ void handle_equip_mouse_input (void);
 void draw_docked_quicknav_bar (void);
 int handle_quicknav_mouse_input (void);
 
-extern int cross_x;
-extern int cross_y;
-extern int planet_unknown;
+#include "game_state.h"
+
+#define cross_x (get_chart_state()->cross_x)
+#define cross_y (get_chart_state()->cross_y)
+#define planet_unknown (get_chart_state()->planet_unknown)
 
 #endif
 

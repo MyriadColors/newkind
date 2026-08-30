@@ -173,6 +173,14 @@ typedef struct flight_state
 	double yaw_f;
 } FlightState;
 
+struct random_seed
+{
+	int a;
+	int b;
+	int c;
+	int d;
+};
+
 /* 4. Universe & Environmental Entities */
 typedef struct universe_state
 {
@@ -182,6 +190,8 @@ typedef struct universe_state
 	struct univ_object objects[MAX_UNIV_OBJECTS];
 	int ship_count[NO_OF_SHIPS + 1];
 	int carry_flag;
+	struct random_seed rnd_seed;
+	int rand_seed;
 } UniverseState;
 
 /* 5. Game Session & UI Flow */
@@ -193,6 +203,31 @@ typedef struct session_state
 	int is_game_over;
 } SessionState;
 
+/* 6. UI & Cockpit Message State */
+typedef struct ui_state
+{
+	int message_count;
+	char message_string[80];
+	int game_paused;
+	int draw_lasers;
+	int have_joystick;
+	int rolling;
+	int climbing;
+	int yawing;
+	int hilite_item;
+} UIState;
+
+/* 7. Cartography & System Search State */
+typedef struct cartography_state
+{
+	int cross_x;
+	int cross_y;
+	int cross_timer;
+	int planet_unknown;
+	bool find_input;
+	char find_name[32];
+} CartographyState;
+
 /* Unified Game State Root */
 typedef struct game_state
 {
@@ -201,6 +236,8 @@ typedef struct game_state
 	FlightState flight;
 	UniverseState env;
 	SessionState session;
+	UIState ui;
+	CartographyState chart;
 } GameState;
 
 /* Global Master Singleton Instance */
@@ -237,10 +274,22 @@ extern GameState g_state;
 	return &g_state.session;
 }
 
+[[nodiscard]] static inline UIState *get_ui_state(void)
+{
+	return &g_state.ui;
+}
+
+[[nodiscard]] static inline CartographyState *get_chart_state(void)
+{
+	return &g_state.chart;
+}
+
 /* State Management Operations */
 void game_state_init(void);
 void game_state_restore_saved_commander(void);
 void game_state_reset_flight(void);
 void game_state_reset_universe(void);
+void game_state_reset_ui(void);
+void game_state_reset_chart(void);
 
 #endif /* GAME_STATE_H */

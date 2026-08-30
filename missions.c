@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
  
+#include "raylib.h"
 #include "config.h"
 #include "elite.h"
 #include "gfx.h"
@@ -210,20 +211,21 @@ void constrictor_mission_brief (void)
 	flight->climb = 0;
 	flight->speed = 0;
 
-	do
+	while (!WindowShouldClose())
 	{
 		gfx_clear_area (310, 50, 510, 180);
 		update_universe ();
 		env->objects[0].location.z = 600;
 		gfx_update_screen();
 		kbd_poll_keyboard();
-	} while (!kbd_space_pressed);
+		if (kbd_space_pressed || kbd_enter_pressed || mouse_left_pressed || kbd_escape_pressed)
+			break;
+	}
 }	
 
 
 void constrictor_mission_debrief (void)
 {
-	int keyasc;
 	PlayerState *player = get_player_state();
 
 	player->current.mission = 3;
@@ -240,18 +242,18 @@ void constrictor_mission_debrief (void)
 
 	gfx_display_centre_text (330, "Press space to continue.", 140, GFX_COL_GOLD);
 
-	gfx_update_screen();
-	
-	do
+	while (!WindowShouldClose())
 	{
-		keyasc = kbd_read_key();
-	} while (keyasc != ' ');
+		gfx_update_screen();
+		kbd_poll_keyboard();
+		if (kbd_space_pressed || kbd_enter_pressed || mouse_left_pressed || kbd_escape_pressed)
+			break;
+	}
 }
 
 
 void thargoid_mission_first_brief (void)
 {
-	int keyasc;
 	PlayerState *player = get_player_state();
 
 	player->current.mission = 4;
@@ -264,18 +266,18 @@ void thargoid_mission_first_brief (void)
 
 	gfx_display_centre_text (330, "Press space to continue.", 140, GFX_COL_GOLD);
 
-	gfx_update_screen();
-	
-	do
+	while (!WindowShouldClose())
 	{
-		keyasc = kbd_read_key();
-	} while (keyasc != ' ');
+		gfx_update_screen();
+		kbd_poll_keyboard();
+		if (kbd_space_pressed || kbd_enter_pressed || mouse_left_pressed || kbd_escape_pressed)
+			break;
+	}
 }
 
 
 void thargoid_mission_second_brief (void)
 {
-	int keyasc;
 	PlayerState *player = get_player_state();
 
 	player->current.mission = 5;
@@ -291,18 +293,18 @@ void thargoid_mission_second_brief (void)
 	
 	gfx_display_centre_text (330, "Press space to continue.", 140, GFX_COL_GOLD);
 
-	gfx_update_screen();
-	
-	do
+	while (!WindowShouldClose())
 	{
-		keyasc = kbd_read_key();
-	} while (keyasc != ' ');
+		gfx_update_screen();
+		kbd_poll_keyboard();
+		if (kbd_space_pressed || kbd_enter_pressed || mouse_left_pressed || kbd_escape_pressed)
+			break;
+	}
 }
 
 
 void thargoid_mission_debrief (void)
 {
-	int keyasc;
 	PlayerState *player = get_player_state();
 
 	player->current.mission = 6;
@@ -319,12 +321,13 @@ void thargoid_mission_debrief (void)
 
 	gfx_display_centre_text (330, "Press space to continue.", 140, GFX_COL_GOLD);
 
-	gfx_update_screen();
-	
-	do
+	while (!WindowShouldClose())
 	{
-		keyasc = kbd_read_key();
-	} while (keyasc != ' ');
+		gfx_update_screen();
+		kbd_poll_keyboard();
+		if (kbd_space_pressed || kbd_enter_pressed || mouse_left_pressed || kbd_escape_pressed)
+			break;
+	}
 }
 
 

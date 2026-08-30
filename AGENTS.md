@@ -2,16 +2,40 @@
 
 ## Build
 
+### Windows (jom — Recommended)
+
 ```sh
-make          # builds raylib (auto-clones into deps/), then compiles newkind
-make clean    # remove object files and binary
-make clean-deps  # remove deps/raylib entirely
+jom              # compiles all objects in parallel and links newkind.exe
+jom clean        # removes all object files (.o) and newkind.exe
+jom clean-deps   # removes deps/raylib entirely
+jom distclean    # clean + clean-deps
+```
+
+### Linux / macOS (make)
+
+```sh
+make             # builds via GNUmakefile
+make clean       # removes all object files and binary
+make clean-deps  # removes deps/raylib entirely
 make distclean   # clean + clean-deps
 ```
 
+#### Linux / WSL Prerequisites
+
+Raylib can either be installed system-wide or built from bundled source.
+
+- **Recommended (System Raylib — instant builds)**:
+  - **Ubuntu / Debian / WSL**: `sudo apt install libraylib-dev`
+  - **Fedora / RHEL**: `sudo dnf install raylib-devel`
+  - **Arch Linux**: `sudo pacman -S raylib`
+  - **macOS**: `brew install raylib`
+- **Alternative (Bundled Raylib — requires OpenGL/X11 dev packages)**:
+  - **Ubuntu / Debian / WSL**: `sudo apt install libgl-dev libx11-dev libxi-dev libxcursor-dev libxrandr-dev libxinerama-dev`
+  - **Fedora / RHEL**: `sudo dnf install libGL-devel libX11-devel libXi-devel libXcursor-devel libXrandr-devel libXinerama-devel`
+  - **Arch Linux**: `sudo pacman -S libglvnd libx11 libxi libxcursor libxrandr libxinerama`
+
 - Requires **clang** (default CC) and **C23** (`-std=c23`).
-- Raylib is fetched automatically from GitHub into `deps/raylib/` if missing, then built as a static lib.
-- Platform detected from `$(OS)` / `uname -s`. Windows links `opengl32 gdi32 winmm`; Linux links `GL X11 pthread`; macOS uses Cocoa/IOKit frameworks.
+- If system Raylib is not detected via `pkg-config`, Raylib is fetched automatically from GitHub into `deps/raylib/` and built as a static lib.
 - Output binary: `newkind.exe` (Windows) or `newkind` (Linux/macOS).
 
 ## Project Structure
@@ -19,6 +43,7 @@ make distclean   # clean + clean-deps
 Single flat C project — no subdirectories, no packages. All `.c`/`.h` files are in the repo root.
 
 Key source files:
+
 - `main.c` — game loop, input dispatch, screen management
 - `game_state.c/.h` — central `GameState` singleton (`g_state`) holding all runtime state
 - `space.c` — universe update, ship AI, docking, hyperspace
@@ -33,6 +58,7 @@ Key source files:
 ## State Access Pattern
 
 Global state lives in `GameState g_state` (defined in `game_state.c`). Access via inline getters — not direct field access:
+
 ```c
 get_session_state()->current_screen   // not g_state.session.current_screen
 get_player_state()->current           // commander struct
@@ -64,7 +90,7 @@ get_config_state()->speed_cap         // config
 
 ## Gotchas
 
-- Adding a new `.c` file: add it to `OBJS` in the makefile **and** add a dependency line (the makefile has explicit per-file deps).
+- Adding a new `.c` file: add it to `OBJS` in `Makefile` **and** add a dependency line (the `Makefile` has explicit per-file deps).
 - The `deps/raylib/` directory is git-ignored and auto-cloned. First build takes longer.
 - All game logic runs in a single-threaded loop tied to `speed_cap` (milliseconds per tick). Simulation ticks are rate-limited via `GetTime()` comparisons.
 - Screen transitions clear the display (`gfx_clear_display()`). Don't assume buffer contents persist across frames.

@@ -26,19 +26,9 @@
 #include "elite.h"
 #include "planet.h"
 #include "missions.h"
+#include "game_state.h"
 
-
-
-struct random_seed
-{
-	int a;
-	int b;
-	int c;
-	int d;
-};
-
-
-static struct random_seed rnd_seed;
+#define rnd_seed (get_universe_state()->rnd_seed)
 
 static const char *digrams = "ABOUSEITILETSTONLONUTHNOALLEXEGEZACEBISOUSESARMAINDIREA?ERATENBERALAVETIEDORQUANTEISRION";
 

@@ -6,19 +6,46 @@ Revision date: 22 July 2001
 This is release 1.0 of Elite - The New Kind.
 For changes since previous releases see below.
 
-newkindb.zip contains a compiled version of the code designed to run under MS Windows 95/98/NT using the Allegro graphics library and DirectX.
+This is the modern Raylib / C23 port of Elite - The New Kind.
 
-newkind.zip contains source code for Elite - The New Kind.
-If you want to recompile the game then please note the following...
-a. The .wav and .dat files are not included in the source distribution to keep the size down, they can be found in newkindb.zip.
-b. You need the WIP version of Allegro to compile the code.
+Build Requirements & Dependencies:
+----------------------------------
+Compiler: Clang with ISO C23 support (-std=c23).
+Graphics & Audio Engine: Raylib 6.0 (automatically cloned to deps/raylib if missing).
 
-The latest versions of the source and executable can always be found on the New Kind website...
-http://www.newkind.co.uk
+1. Windows (Recommended: jom):
+   - Compiler: Clang / LLVM
+   - Build Tool: jom (NMake-compatible parallel build)
+   - Commands:
+       jom              (build newkind.exe in parallel)
+       jom clean        (clean build objects)
+       jom clean-deps   (delete deps/raylib)
+       jom distclean    (clean build and dependencies)
 
-To run the supplied executable you will need DirectX installed.  Windows 98/ME/2000 and NT 4 (with latest service pack) come with this.
-If you are using Windows 95 and you haven't already installed DirectX you will need to do so.
-The DirectX runtime can be downloaded from the Microsoft website. (www.microsoft.com/directx).
+2. Linux / WSL (GNU make):
+   - Compiler: Clang
+   - Build Tool: make
+   - Recommended (System Raylib — instant builds):
+       Ubuntu / Debian / WSL: sudo apt update && sudo apt install -y libraylib-dev
+       Fedora / RHEL:         sudo dnf install -y raylib-devel
+       Arch Linux:            sudo pacman -S raylib
+       macOS:                 brew install raylib
+   - Alternative (Bundled Raylib — requires OpenGL/X11 dev packages):
+       Ubuntu / Debian / WSL: sudo apt install -y libgl-dev libx11-dev libxi-dev libxcursor-dev libxrandr-dev libxinerama-dev
+       Fedora / RHEL:         sudo dnf install -y libGL-devel libX11-devel libXi-devel libXcursor-devel libXrandr-devel libXinerama-devel
+       Arch Linux:            sudo pacman -S libglvnd libx11 libxi libxcursor libxrandr libxinerama
+   - Commands:
+       make             (build newkind)
+       make clean       (clean build objects)
+       make distclean   (clean build and dependencies)
+
+3. macOS (GNU make):
+   - Compiler: Apple Clang
+   - Build Tool: make
+   - Dependencies: Uses native Cocoa, IOKit, and OpenGL frameworks.
+   - Commands:
+       make
+       make clean
 
 Two pieces of music are included in Elite - The New Kind.  The Elite Theme and The Blue Danube.
 The Elite Theme was composed by Aidan Bell and the Blue Danube was composed by Strauss.

@@ -16,6 +16,7 @@
 #include "config.h"
 #include "gfx.h"
 #include "elite.h"
+#include "keyboard.h"
 #include "game_state.h"
 
 #define aspect_ratio_mode (get_config_state()->aspect_ratio_mode)
@@ -657,6 +658,32 @@ int gfx_request_file(const char *title, char *path, const char *ext)
 	}
 
 	return 0;
+}
+
+void gfx_display_modal_message(const char *line1, const char *line2)
+{
+	while (!WindowShouldClose())
+	{
+		gfx_clear_area(64, 130, 448, 250);
+		gfx_draw_rectangle(64, 130, 448, 250, GFX_COL_BLACK);
+		gfx_draw_colour_line(64, 130, 448, 130, GFX_COL_GOLD);
+		gfx_draw_colour_line(64, 250, 448, 250, GFX_COL_GOLD);
+		gfx_draw_colour_line(64, 130, 64, 250, GFX_COL_GOLD);
+		gfx_draw_colour_line(448, 130, 448, 250, GFX_COL_GOLD);
+
+		if (line1 != nullptr)
+			gfx_display_centre_text(150, line1, 140, GFX_COL_GOLD);
+		if (line2 != nullptr)
+			gfx_display_centre_text(180, line2, 120, GFX_COL_WHITE);
+
+		gfx_display_centre_text(215, "Press Space, Enter, Esc or click to continue.", 110, GFX_COL_GREY_1);
+
+		gfx_update_screen();
+		kbd_poll_keyboard();
+
+		if (kbd_space_pressed || kbd_enter_pressed || kbd_escape_pressed || mouse_left_pressed)
+			break;
+	}
 }
 
 void gfx_toggle_maximize (void)

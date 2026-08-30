@@ -23,8 +23,10 @@ void save_commander_screen (void);
 void load_commander_screen (void);
 void update_screen (void);
 
-extern bool find_input;
-extern char find_name[20];
-extern int cross_timer;
+#include "game_state.h"
+
+#define find_input (get_chart_state()->find_input)
+#define find_name (get_chart_state()->find_name)
+#define cross_timer (get_chart_state()->cross_timer)
 
 #endif

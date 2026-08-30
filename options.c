@@ -30,7 +30,7 @@
 
 #include "game_state.h"
 
-static int hilite_item;
+#define hilite_item (get_ui_state()->hilite_item)
  
 #define NUM_OPTIONS 4
 #define NUM_SETTINGS 15

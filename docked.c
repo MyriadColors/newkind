@@ -77,9 +77,7 @@ const char *government_type[] = {	"Anarchy",
 
 
 
-int cross_x = 0;
-int cross_y = 0;
-int planet_unknown = 0;
+#define hilite_item (get_ui_state()->hilite_item)
 
 
 void draw_cross (int cx, int cy)
@@ -243,13 +241,13 @@ void move_cursor_to_origin (void)
 }
 
 
-void find_planet_by_name (const char *find_name)
+void find_planet_by_name (const char *target_name)
 {
     int i;
 	struct galaxy_seed glx;
 	char planet_name[16];
 	int found = 0;
-	int find_len = strlen (find_name);
+	int find_len = strlen (target_name);
 
 	if (find_len == 0)
 	{
@@ -263,7 +261,7 @@ void find_planet_by_name (const char *find_name)
 	{
 		name_planet (planet_name, glx);
 		
-		if (strcasecmp (planet_name, find_name) == 0)
+		if (strcasecmp (planet_name, target_name) == 0)
 		{
 			found = 1;
 			break;
@@ -283,7 +281,7 @@ void find_planet_by_name (const char *find_name)
 		{
 			name_planet (planet_name, glx);
 			
-			if (strncasecmp (planet_name, find_name, find_len) == 0)
+			if (strncasecmp (planet_name, target_name, find_len) == 0)
 			{
 				found = 1;
 				break;
@@ -910,8 +908,6 @@ void display_commander_status (void)
 #define TONNES		0
 #define	KILOGRAMS	1
 #define GRAMS		2
-
-static int hilite_item;
 static char *unit_name[] = {"t", "kg", "g"};
 
 

@@ -20,8 +20,9 @@
 #include <stdlib.h>
 
 #include "random.h"
+#include "game_state.h"
 
-static int rand_seed;
+#define rand_seed (get_universe_state()->rand_seed)
 
 /*
  * Portable random number generator implementing the recursion:

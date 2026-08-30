@@ -120,9 +120,33 @@ GameState g_state = {
 	},
 	.env = {
 		.carry_flag = 0,
+		.rnd_seed = {0, 0, 0, 0},
+		.rand_seed = 1,
 	},
 	.session = {
 		.current_screen = 0,
+		.is_docked = 1,
+		.is_finish = 0,
+		.is_game_over = 0,
+	},
+	.ui = {
+		.message_count = 0,
+		.message_string = {0},
+		.game_paused = 0,
+		.draw_lasers = 0,
+		.have_joystick = 0,
+		.rolling = 0,
+		.climbing = 0,
+		.yawing = 0,
+		.hilite_item = 0,
+	},
+	.chart = {
+		.cross_x = -1,
+		.cross_y = -1,
+		.cross_timer = 0,
+		.planet_unknown = 0,
+		.find_input = false,
+		.find_name = {0},
 	}
 };
 
@@ -162,9 +186,34 @@ void game_state_reset_universe(void)
 	}
 }
 
+void game_state_reset_ui(void)
+{
+	g_state.ui.message_count = 0;
+	g_state.ui.message_string[0] = '\0';
+	g_state.ui.game_paused = 0;
+	g_state.ui.draw_lasers = 0;
+	g_state.ui.have_joystick = 0;
+	g_state.ui.rolling = 0;
+	g_state.ui.climbing = 0;
+	g_state.ui.yawing = 0;
+	g_state.ui.hilite_item = 0;
+}
+
+void game_state_reset_chart(void)
+{
+	g_state.chart.cross_x = -1;
+	g_state.chart.cross_y = -1;
+	g_state.chart.cross_timer = 0;
+	g_state.chart.planet_unknown = 0;
+	g_state.chart.find_input = false;
+	g_state.chart.find_name[0] = '\0';
+}
+
 void game_state_init(void)
 {
 	game_state_restore_saved_commander();
 	game_state_reset_flight();
 	game_state_reset_universe();
+	game_state_reset_ui();
+	game_state_reset_chart();
 }

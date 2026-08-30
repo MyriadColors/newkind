@@ -81,21 +81,21 @@
 #define flight_assist (get_config_state()->flight_assist)
 #define aspect_ratio_mode (get_config_state()->aspect_ratio_mode)
 #define scaling_filter (get_config_state()->scaling_filter)
-#define display_mode (get_config_state()->display_mode)
+#define cross_x (get_chart_state()->cross_x)
+#define cross_y (get_chart_state()->cross_y)
+#define cross_timer (get_chart_state()->cross_timer)
+#define planet_unknown (get_chart_state()->planet_unknown)
+#define find_input (get_chart_state()->find_input)
+#define find_name (get_chart_state()->find_name)
 
-int cross_timer;
-
-int draw_lasers;
-int message_count;
-char message_string[80];
-int rolling;
-int climbing;
-int yawing;
-int game_paused;
-int have_joystick;
-
-bool find_input = false;
-char find_name[20];
+#define message_count (get_ui_state()->message_count)
+#define message_string (get_ui_state()->message_string)
+#define game_paused (get_ui_state()->game_paused)
+#define draw_lasers (get_ui_state()->draw_lasers)
+#define have_joystick (get_ui_state()->have_joystick)
+#define rolling (get_ui_state()->rolling)
+#define climbing (get_ui_state()->climbing)
+#define yawing (get_ui_state()->yawing)
 
 /*
  * Initialise the game parameters.
@@ -1115,11 +1115,11 @@ void save_commander_screen (void)
 
 	if (rv)
 	{
-		gfx_display_centre_text (175, "Error Saving Commander!", 140, GFX_COL_GOLD);
+		gfx_display_modal_message ("Error Saving Commander!", "Could not save commander file.");
 		return;
 	}
 	
-	gfx_display_centre_text (175, "Commander Saved.", 140, GFX_COL_GOLD);
+	gfx_display_modal_message ("Commander Saved.", path);
 
 	set_commander_name (path);
 	saved_cmdr = cmdr;
@@ -1149,10 +1149,7 @@ void load_commander_screen (void)
 	if (rv)
 	{
 		saved_cmdr = cmdr;
-		gfx_display_centre_text (175, "Error Loading Commander!", 140, GFX_COL_GOLD);
-		gfx_display_centre_text (200, "Press any key to continue.", 140, GFX_COL_GOLD);
-		gfx_update_screen();
-		kbd_read_key();
+		gfx_display_modal_message ("Error Loading Commander!", "Could not load commander file.");
 		return;
 	}
 	
