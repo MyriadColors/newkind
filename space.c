@@ -648,7 +648,7 @@ void update_universe (void)
 				(type != SHIP_CONSTRICTOR) && (type != SHIP_COUGAR) &&
 				(type != SHIP_CORIOLIS) && (type != SHIP_DODEC))
 			{
-				snd_play_sample (SND_EXPLODE);
+				snd_play_sample_spatial (SND_EXPLODE, universe[i].location.x, universe[i].location.z);
 				universe[i].flags |= FLG_DEAD;		
 			}
 
@@ -719,6 +719,39 @@ void update_universe (void)
 				continue;
 
 			check_target (i, &flip);
+		}
+	}
+
+	/* Station Docking Clearance Chime Feedback */
+	if (can_fast_dock)
+	{
+		if (!get_player_state()->vitals.docking_chime_played)
+		{
+			snd_trigger_docking_clearance();
+			get_player_state()->vitals.docking_chime_played = 1;
+		}
+	}
+	else
+	{
+		get_player_state()->vitals.docking_chime_played = 0;
+	}
+
+	/* Low Fuel Audible Pulsing Warning */
+	if (!docked && (current_screen == SCR_FRONT_VIEW || current_screen == SCR_REAR_VIEW ||
+	                current_screen == SCR_LEFT_VIEW || current_screen == SCR_RIGHT_VIEW))
+	{
+		if (cmdr.fuel <= 7)
+		{
+			get_player_state()->vitals.low_fuel_pulse_timer++;
+			if (get_player_state()->vitals.low_fuel_pulse_timer >= 45)
+			{
+				snd_trigger_low_fuel_warning();
+				get_player_state()->vitals.low_fuel_pulse_timer = 0;
+			}
+		}
+		else
+		{
+			get_player_state()->vitals.low_fuel_pulse_timer = 0;
 		}
 	}
 

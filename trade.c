@@ -178,6 +178,7 @@ void scoop_item (int un)
 		trade = rand255() & 7;
 		player->current.current_cargo[trade]++;
 		info_message (stock_market[trade].name);
+		snd_trigger_cargo_scoop ();
 		remove_ship (un);
 		return;					
 	}
@@ -187,6 +188,7 @@ void scoop_item (int un)
 		trade = ship_list[type]->scoop_type + 1;
 		player->current.current_cargo[trade]++;
 		info_message (stock_market[trade].name);
+		snd_trigger_cargo_scoop ();
 		remove_ship (un);
 		return;					
 	}

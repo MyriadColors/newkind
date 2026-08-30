@@ -16,6 +16,7 @@
  * Options.c
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,13 +28,14 @@
 #include "docked.h"
 #include "file.h" 
 #include "keyboard.h"
+#include "sound.h"
 
 #include "game_state.h"
 
 #define hilite_item (get_ui_state()->hilite_item)
  
 #define NUM_OPTIONS 4
-#define NUM_SETTINGS 15
+#define NUM_SETTINGS 18
 
 #define OPTION_BAR_WIDTH	(400)
 #define OPTION_BAR_HEIGHT	(15)
@@ -74,6 +76,9 @@ static const struct setting setting_list[NUM_SETTINGS] =
 	{"Aspect Ratio:",	{"1:1 Square", "4:3 Retro", "16:9 Wide", "Integer", "Stretch", ""}},
 	{"Filter:",			{"Point", "Bilinear", "", "", "", ""}},
 	{"Tactical HUD:",	{"Off", "Standard", "Full", "", "", ""}},
+	{"Master Vol:",		{"", "", "", "", "", ""}},
+	{"Music Vol:",		{"", "", "", "", "", ""}},
+	{"SFX Vol:",		{"", "", "", "", "", ""}},
 	{"Save Settings",	{"", "", "", "", "", ""}}
 };
 
@@ -97,14 +102,18 @@ void display_setting_item (int item)
 {
 	int x,y;
 	int v;
+	char vol_buf[16];
 	const ConfigState *cfg = get_config_state();
 
 	if (item == (NUM_SETTINGS - 1))
 	{
-		y = 265;
+		y = 268;
 		gfx_display_centre_text (y, setting_list[item].name, 120, GFX_COL_WHITE);
 		return;
 	}
+
+	x = (item & 1) * 250 + 32; 
+	y = (item / 2) * 23 + 52;
 	
 	switch (item)
 	{
@@ -164,13 +173,28 @@ void display_setting_item (int item)
 			v = cfg->tactical_hud;
 			break;
 
+		case 14:
+			sprintf (vol_buf, "%d%%", cfg->master_volume);
+			gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
+			gfx_display_colour_text (x + 120, y, vol_buf, GFX_COL_WHITE);
+			return;
+
+		case 15:
+			sprintf (vol_buf, "%d%%", cfg->music_volume);
+			gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
+			gfx_display_colour_text (x + 120, y, vol_buf, GFX_COL_WHITE);
+			return;
+
+		case 16:
+			sprintf (vol_buf, "%d%%", cfg->sfx_volume);
+			gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
+			gfx_display_colour_text (x + 120, y, vol_buf, GFX_COL_WHITE);
+			return;
+
 		default:
 			v = 0;
 			break;
 	}
-	
-	x = (item & 1) * 250 + 32; 
-	y = (item / 2) * 26 + 65;
 	
 	gfx_display_colour_text (x, y, setting_list[item].name, GFX_COL_WHITE);
 	gfx_display_colour_text (x + 120, y, setting_list[item].value[v], GFX_COL_WHITE);
@@ -187,13 +211,13 @@ void highlight_setting (int item)
 		if (hilite_item == (NUM_SETTINGS - 1))
 		{
 			x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-			y = 265;
+			y = 268;
 			width = OPTION_BAR_WIDTH;
 		}
 		else
 		{
 			x = (hilite_item & 1) * 250 + 32 + 120; 
-			y = (hilite_item / 2) * 26 + 65;
+			y = (hilite_item / 2) * 23 + 52;
 			width = 100;
 		}
 
@@ -204,13 +228,13 @@ void highlight_setting (int item)
 	if (item == (NUM_SETTINGS - 1))
 	{
 		x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-		y = 265;
+		y = 268;
 		width = OPTION_BAR_WIDTH;
 	}
 	else
 	{
 		x = (item & 1) * 250 + 32 + 120; 
-		y = (item / 2) * 26 + 65;
+		y = (item / 2) * 23 + 52;
 		width = 100;
 	}
 	
@@ -328,6 +352,22 @@ void toggle_setting (void)
 		case 13:
 			cfg->tactical_hud = (cfg->tactical_hud + 1) % 3;
 			break;
+
+		case 14:
+			cfg->master_volume = (cfg->master_volume >= 100) ? 0 : (cfg->master_volume + 5);
+			snd_apply_volumes();
+			break;
+
+		case 15:
+			cfg->music_volume = (cfg->music_volume >= 100) ? 0 : (cfg->music_volume + 5);
+			snd_apply_volumes();
+			break;
+
+		case 16:
+			cfg->sfx_volume = (cfg->sfx_volume >= 100) ? 0 : (cfg->sfx_volume + 5);
+			snd_apply_volumes();
+			snd_trigger_cargo_scoop();
+			break;
 	}
 
 	highlight_setting (hilite_item);
@@ -402,6 +442,22 @@ void cycle_setting_backwards (void)
 		case 13:
 			cfg->tactical_hud = (cfg->tactical_hud + 2) % 3;
 			break;
+
+		case 14:
+			cfg->master_volume = (cfg->master_volume <= 0) ? 100 : (cfg->master_volume - 5);
+			snd_apply_volumes();
+			break;
+
+		case 15:
+			cfg->music_volume = (cfg->music_volume <= 0) ? 100 : (cfg->music_volume - 5);
+			snd_apply_volumes();
+			break;
+
+		case 16:
+			cfg->sfx_volume = (cfg->sfx_volume <= 0) ? 100 : (cfg->sfx_volume - 5);
+			snd_apply_volumes();
+			snd_trigger_cargo_scoop();
+			break;
 	}
 
 	highlight_setting (hilite_item);
@@ -418,13 +474,13 @@ void handle_settings_mouse_input (void)
 		if (i == (NUM_SETTINGS - 1))
 		{
 			x = GFX_X_CENTRE - (OPTION_BAR_WIDTH / 2);
-			y = 265;
+			y = 268;
 			w = OPTION_BAR_WIDTH;
 		}
 		else
 		{
 			x = (i & 1) * 250 + 32;
-			y = (i / 2) * 26 + 65;
+			y = (i / 2) * 23 + 52;
 			w = 235;
 		}
 

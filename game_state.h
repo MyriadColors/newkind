@@ -131,6 +131,9 @@ typedef struct config_state
 	int scaling_filter;
 	int display_mode;
 	int tactical_hud;
+	int master_volume;
+	int music_volume;
+	int sfx_volume;
 	char scanner_filename[256];
 	int scanner_cx;
 	int scanner_cy;
@@ -151,6 +154,9 @@ typedef struct player_vitals
 	int auto_pilot;
 	int hyper_ready;
 	int can_fast_dock;
+	int low_fuel_pulse_timer;
+	int docking_chime_played;
+	int missile_tone_timer;
 	struct player_ship ship_specs;
 } PlayerVitals;
 

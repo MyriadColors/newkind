@@ -26,6 +26,9 @@ GameState g_state = {
 		.scaling_filter = 0,      /* 0 = Point (Crisp), 1 = Bilinear (Smooth) */
 		.display_mode = 0,        /* 0 = Maximized, 1 = Fullscreen, 2 = 800x600, etc. */
 		.tactical_hud = 1,        /* 0 = Off, 1 = Standard, 2 = Full */
+		.master_volume = 100,     /* 0 - 100% */
+		.music_volume = 100,      /* 0 - 100% */
+		.sfx_volume = 100,        /* 0 - 100% */
 		.scanner_filename = "scanner.bmp",
 		.scanner_cx = 256,
 		.scanner_cy = 385 + 23,

@@ -118,7 +118,7 @@ Focus on eliminating blocking event starvation loops, modal lockups, build syste
 ---
 
 ### Phase 2: Audio & Music Modernization
-**Target Release:** `v1.2` | **Priority:** Medium | **Status:** Planned
+**Target Release:** `v1.2` | **Priority:** Medium | **Status:** Completed
 
 Upgrade background music playback, provide persistent multi-channel volume controls, and implement dynamic directional sound feedback.
 
@@ -352,9 +352,9 @@ graph TD
 | **1.2** | Interactive Modal Error Prompt | Phase 1 | `v1.1` | Low | **Completed** | `TEST_MODAL_DISMISS` |
 | **1.3** | Makefile Idempotency & Clean Builds | Phase 1 | `v1.1` | Low | **Completed** | `TEST_BUILD_CLEAN` |
 | **1.4** | Full GameState Consolidation | Phase 1 | `v1.1` | Medium | **Completed** | `TEST_STATE_ISOLATION` |
-| **2.1** | BGM Audio Streaming & Soft-Synth | Phase 2 | `v1.2` | Medium | Planned | `TEST_AUDIO_STREAM` |
-| **2.2** | Tri-Channel Volume Controls | Phase 2 | `v1.2` | Low | Planned | `TEST_VOL_PERSIST` |
-| **2.3** | Spatial Audio Panning & Immersion SFX | Phase 2 | `v1.2` | Medium | Planned | `TEST_SFX_SPATIAL` |
+| **2.1** | BGM Audio Streaming & Soft-Synth | Phase 2 | `v1.2` | Medium | **Completed** | `TEST_AUDIO_STREAM` |
+| **2.2** | Tri-Channel Volume Controls | Phase 2 | `v1.2` | Low | **Completed** | `TEST_VOL_PERSIST` |
+| **2.3** | Spatial Audio Panning & Immersion SFX | Phase 2 | `v1.2` | Medium | **Completed** | `TEST_SFX_SPATIAL` |
 | **3.1** | CRT Post-Processing Shader Pass | Phase 3 | `v1.3` | High | Planned | `TEST_CRT_PIPELINE` |
 | **3.2** | Hyperspace & Witchspace Warp FX | Phase 3 | `v1.3` | Medium | Planned | `TEST_WARP_VISUALS` |
 | **3.3** | Dynamic Particle & Spark Pool | Phase 3 | `v1.3` | Medium | Planned | `TEST_PARTICLE_POOL` |

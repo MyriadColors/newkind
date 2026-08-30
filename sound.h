@@ -40,8 +40,22 @@
 void snd_sound_startup (void);
 void snd_sound_shutdown (void);
 void snd_play_sample (int sample_no);
+void snd_play_sample_pan (int sample_no, float pan, float volume);
+void snd_play_sample_spatial (int sample_no, double x, double z);
 void snd_play_midi (int midi_no, int repeat);
 void snd_update_sound (void);
 void snd_stop_midi (void);
+
+/* Multi-channel Volume Matrix */
+void snd_set_master_volume (int vol_percent);
+void snd_set_music_volume (int vol_percent);
+void snd_set_sfx_volume (int vol_percent);
+void snd_apply_volumes (void);
+
+/* Immersion SFX triggers */
+void snd_trigger_docking_clearance (void);
+void snd_trigger_low_fuel_warning (void);
+void snd_trigger_missile_lock (bool is_locked);
+void snd_trigger_cargo_scoop (void);
 
 #endif

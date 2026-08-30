@@ -63,6 +63,12 @@ void write_config_file (void)
 
 	fprintf (fp, "%d\t\t# Tactical HUD: 0 = Off, 1 = Standard, 2 = Full\n", cfg->tactical_hud);
 
+	fprintf (fp, "%d\t\t# Master Volume: 0 - 100%%\n", cfg->master_volume);
+
+	fprintf (fp, "%d\t\t# Music Volume: 0 - 100%%\n", cfg->music_volume);
+
+	fprintf (fp, "%d\t\t# SFX Volume: 0 - 100%%\n", cfg->sfx_volume);
+
 	fprintf (fp, "newscan.cfg\t# Name of scanner config file to use.\n");
 
 	fclose (fp);
@@ -193,6 +199,9 @@ void read_config_file (void)
 			else if (extra_idx == 6) sscanf (str, "%d", &cfg->scaling_filter);
 			else if (extra_idx == 7) sscanf (str, "%d", &cfg->display_mode);
 			else if (extra_idx == 8) sscanf (str, "%d", &cfg->tactical_hud);
+			else if (extra_idx == 9) sscanf (str, "%d", &cfg->master_volume);
+			else if (extra_idx == 10) sscanf (str, "%d", &cfg->music_volume);
+			else if (extra_idx == 11) sscanf (str, "%d", &cfg->sfx_volume);
 			extra_idx++;
 		}
 	}

@@ -76,7 +76,7 @@ swat.o: swat.c swat.h elite.h config.h main.h gfx.h shipdata.h \
 	random.h pilot.h game_state.h
 random.o: random.c random.h game_state.h
 trade.o: trade.c trade.h elite.h config.h game_state.h
-options.o: options.c options.h elite.h config.h gfx.h file.h keyboard.h game_state.h
+options.o: options.c options.h elite.h config.h gfx.h file.h keyboard.h sound.h game_state.h
 stars.o: stars.c stars.h elite.h config.h gfx.h random.h game_state.h
 missions.o: missions.c missions.h config.h elite.h gfx.h planet.h main.h \
 	vector.h space.h keyboard.h game_state.h

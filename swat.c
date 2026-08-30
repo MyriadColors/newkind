@@ -361,7 +361,7 @@ void explode_object (int un)
 	if ((cmdr.score & 255) == 0)
 		info_message ("Right On Commander!");
 	
-	snd_play_sample (SND_EXPLODE);
+	snd_play_sample_spatial (SND_EXPLODE, universe[un].location.x, universe[un].location.z);
 	universe[un].flags |= FLG_DEAD;
 
 	if (universe[un].type == SHIP_CONSTRICTOR)
@@ -381,12 +381,12 @@ void check_target (int un, struct univ_object *flip)
 		{
 			missile_target = un;
 			info_message ("Target Locked");
-			snd_play_sample (SND_BEEP);
+			snd_trigger_missile_lock (true);
 		}
 	
 		if (laser)
 		{
-			snd_play_sample (SND_HIT_ENEMY);
+			snd_play_sample_spatial (SND_HIT_ENEMY, flip->location.x, flip->location.z);
 
 			if ((univ->type != SHIP_CORIOLIS) && (univ->type != SHIP_DODEC))
 			{			
@@ -449,7 +449,10 @@ void time_ecm (void)
 void arm_missile (void)
 {
 	if ((cmdr.missiles != 0) && (missile_target == MISSILE_UNARMED))
+	{
 		missile_target = MISSILE_ARMED;
+		snd_trigger_missile_lock (false);
+	}
 }
 
 
@@ -553,7 +556,7 @@ void missile_tactics (int un)
 	
 	if (ecm_active)
 	{
-		snd_play_sample (SND_EXPLODE);
+		snd_play_sample_spatial (SND_EXPLODE, missile->location.x, missile->location.z);
 		missile->flags |= FLG_DEAD;		
 		return;
 	}
@@ -563,7 +566,7 @@ void missile_tactics (int un)
 		if (missile->distance < 256)
 		{
 			missile->flags |= FLG_DEAD;
-			snd_play_sample (SND_EXPLODE);
+			snd_play_sample_spatial (SND_EXPLODE, missile->location.x, missile->location.z);
 			damage_ship (250, missile->location.z >= 0.0);
 			return;
 		}
@@ -587,7 +590,7 @@ void missile_tactics (int un)
 			if ((target->type != SHIP_CORIOLIS) && (target->type != SHIP_DODEC))
 				explode_object (missile->target);
 			else
-				snd_play_sample (SND_EXPLODE);
+				snd_play_sample_spatial (SND_EXPLODE, target->location.x, target->location.z);
 
 			return;
 		}
@@ -818,9 +821,9 @@ void tactics (int un)
 			ship->acceleration--;
 			if (((ship->location.z >= 0.0) && (front_shield == 0)) ||
 				((ship->location.z < 0.0) && (aft_shield == 0)))
-				snd_play_sample (SND_INCOMMING_FIRE_2);
+				snd_play_sample_spatial (SND_INCOMMING_FIRE_2, ship->location.x, ship->location.z);
 			else
-				snd_play_sample (SND_INCOMMING_FIRE_1);
+				snd_play_sample_spatial (SND_INCOMMING_FIRE_1, ship->location.x, ship->location.z);
 		}				
 		else
 		{
