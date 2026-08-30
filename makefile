@@ -15,6 +15,9 @@ else
     endif
 endif
 
+ifeq ($(origin CC),default)
+    CC = clang
+endif
 CC ?= clang
 CFLAGS ?= -std=c23 -O2 -Wall -Wextra -pedantic
 
@@ -26,14 +29,21 @@ RAYLIB_LIB ?= $(RAYLIB_SRC)/libraylib.a
 
 CFLAGS += -I$(RAYLIB_SRC)
 
-# Platform-specific libraries for Raylib static linking
+# Platform-specific libraries and settings for Raylib static linking
 ifeq ($(PLATFORM_OS),WINDOWS)
-    LIBS = $(RAYLIB_LIB) -lopengl32 -lgdi32 -lwinmm -lm
+    ifeq ($(origin AR),default)
+        AR = llvm-ar
+    endif
+    AR ?= llvm-ar
+    CFLAGS += -D_CRT_SECURE_NO_WARNINGS
+    LIBS = $(RAYLIB_LIB) -lopengl32 -lgdi32 -lwinmm -luser32 -lshell32
     EXEC_EXT = .exe
 else ifeq ($(PLATFORM_OS),OSX)
+    AR ?= ar
     LIBS = $(RAYLIB_LIB) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -lm
     EXEC_EXT =
 else
+    AR ?= ar
     LIBS = $(RAYLIB_LIB) -lGL -lm -lpthread -ldl -lrt -lX11
     EXEC_EXT =
 endif
@@ -55,16 +65,32 @@ $(RAYLIB_DIR):
 # Rule to compile raylib static library
 $(RAYLIB_LIB): $(RAYLIB_DIR)
 	@echo "Building Raylib $(RAYLIB_VERSION)..."
-	$(MAKE) -C $(RAYLIB_SRC) CC=$(CC) RAYLIB_LIBTYPE=STATIC
+	$(MAKE) -C $(RAYLIB_SRC) CC=$(CC) AR=$(AR) RAYLIB_LIBTYPE=STATIC
 
 # Ensure raylib is built before any project object file compiles
 $(OBJS): $(RAYLIB_LIB)
 
+ifeq ($(PLATFORM_OS),WINDOWS)
+    RM ?= del /f /q
+    RMDIR ?= rmdir /s /q
+else
+    RM ?= rm -f
+    RMDIR ?= rm -rf
+endif
+
 clean:
-	rm -f *.o $(EXEC) newkind newkind-raylib newkind.exe
+ifeq ($(PLATFORM_OS),WINDOWS)
+	-@$(RM) *.o $(EXEC) 2>nul || exit 0
+else
+	@$(RM) *.o $(EXEC) newkind newkind-raylib newkind.exe
+endif
 
 clean-deps:
-	rm -rf $(RAYLIB_DIR)
+ifeq ($(PLATFORM_OS),WINDOWS)
+	-@$(RMDIR) $(subst /,\,$(RAYLIB_DIR)) 2>nul || exit 0
+else
+	@$(RMDIR) $(RAYLIB_DIR)
+endif
 
 distclean: clean clean-deps
 

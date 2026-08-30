@@ -14,7 +14,12 @@
 
 
 #include <string.h>
+#if defined(_WIN32) || defined(_MSC_VER)
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#else
 #include <strings.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
